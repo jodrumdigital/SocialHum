@@ -1,0 +1,70 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700;800&family=Courier+Prime:wght@400;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Lexend", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Courier Prime", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-hum-teal: #026777;
+  --color-hum-yellow: #FEDA5F;
+  --color-hum-cyan: #A6EDDD;
+  --color-hum-coral: #FF7561;
+  --color-hum-navy: #0D3847;
+  --color-hum-purple: #B8AFFF;
+  --color-hum-cream: #F2EBDF;
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+}
+
+@utility hum-border {
+  border-width: 2px;
+  border-color: var(--color-hum-navy);
+}
+
+@utility hum-shadow {
+  box-shadow: 6px 6px 0px 0px var(--color-hum-navy);
+}
+
+@utility hum-shadow-hover {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+  &:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 8px 8px 0px 0px var(--color-hum-navy);
+  }
+}
+
+@utility hum-btn {
+  @apply rounded-full px-8 py-4 font-black uppercase tracking-tight bg-white hover:bg-hum-yellow transition-all duration-200 hum-shadow-hover border-2 border-hum-navy text-hum-navy;
+}
+
+@utility hum-card {
+  @apply bg-white p-10 rounded-[2.5rem] border-2 border-hum-navy hum-shadow;
+}
+
+@utility hum-sticker {
+  @apply bg-white p-4 rounded-2xl border-2 border-hum-navy hum-shadow rotate-[-2deg] hover:rotate-0 transition-transform duration-200;
+}
+
+@layer base {
+  body {
+    @apply bg-hum-cream text-hum-navy font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4 {
+    @apply font-sans font-bold tracking-tight;
+  }
+}
+
+@keyframes hum-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-hum-float {
+  animation: hum-float 3s ease-in-out infinite;
+}

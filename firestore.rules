@@ -1,0 +1,129 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId} (matches Auth UID)
+    // Fields:
+    //   - uid: string (required)
+    //   - firstName: string
+    //   - lastName: string
+    //   - email: string (required)
+    //   - phoneNumber: string
+    //   - selectedPackage: string (enum: starter, standard, authority)
+    //   - createdAt: timestamp
+    //   - updatedAt: timestamp
+    //
+    // Collection: strategies
+    // Document ID: {strategyId}
+    // Fields:
+    //   - userId: string (required, matches Auth UID)
+    //   - businessName: string (required)
+    //   - industry: string
+    //   - targetAudience: string
+    //   - goals: list
+    //   - tone: string
+    //   - platforms: list
+    //   - createdAt: timestamp
+    //
+    // Collection: content
+    // Document ID: {contentId}
+    // Fields:
+    //   - userId: string (required, matches Auth UID)
+    //   - strategyId: string (required)
+    //   - platform: string
+    //   - caption: string (required)
+    //   - imageUrl: string
+    //   - scheduledDate: timestamp
+    //   - status: string (enum: draft, scheduled, published)
+    //   - createdAt: timestamp
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.userId;
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return hasRequiredFields(['uid', 'email']) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             (data.firstName == null || (data.firstName is string && data.firstName.size() < 100)) &&
+             (data.lastName == null || (data.lastName is string && data.lastName.size() < 100)) &&
+             (data.selectedPackage == null || data.selectedPackage in ['starter', 'standard', 'authority']);
+    }
+
+    function isValidStrategy(data) {
+      return hasRequiredFields(['userId', 'businessName']) &&
+             data.userId == request.auth.uid &&
+             data.businessName is string && data.businessName.size() > 0 && data.businessName.size() < 200;
+    }
+
+    function isValidContent(data) {
+      return hasRequiredFields(['userId', 'strategyId', 'caption']) &&
+             data.userId == request.auth.uid &&
+             data.caption is string && data.caption.size() > 0 && data.caption.size() < 5000;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if isOwner(userId) && isValidUser(request.resource.data);
+      allow delete: if false; // Users cannot delete their profiles for now
+    }
+
+    match /strategies/{strategyId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && isValidStrategy(request.resource.data);
+      allow update: if isDocOwner() && isValidStrategy(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+
+    match /content/{contentId} {
+      allow read: if isAuthenticated() && (resource == null || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && isValidContent(request.resource.data);
+      allow update: if isDocOwner() && isValidContent(request.resource.data);
+      allow delete: if isDocOwner();
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -549,6 +549,8 @@ const AccountCreation = ({ onContinue, onBack }: { onContinue: (data: { firstNam
             <p className="text-hum-navy text-sm font-bold italic leading-tight">
               {error.code === 'auth/operation-not-allowed' 
                 ? "Email/Password sign-in is disabled. Please enable it in your Firebase Console (Authentication > Sign-in method)."
+                : error.code === 'auth/too-many-requests'
+                ? "Too many attempts. We've temporarily blocked requests from this device. Please wait a few minutes and try again."
                 : error.message}
             </p>
             {error.code === 'auth/operation-not-allowed' && (
@@ -595,7 +597,52 @@ const AccountCreation = ({ onContinue, onBack }: { onContinue: (data: { firstNam
   );
 };
 
-const EmailVerification = ({ email, onVerify, onBack, onResend }: { email: string, onVerify: () => void, onBack: () => void, onResend: () => void }) => {
+const EmailVerification = ({ email, onVerify, onBack, onResend }: { email: string, onVerify: () => Promise<void>, onBack: () => void, onResend: () => Promise<void> }) => {
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  const handleResend = async () => {
+    if (resendCooldown > 0 || loading) return;
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      await onResend();
+      setSuccess("Verification email resent! Please check your inbox.");
+      setResendCooldown(60); // 60 second cooldown
+    } catch (err: any) {
+      if (err.code === 'auth/too-many-requests') {
+        setError("Too many requests. Please wait a moment before trying again.");
+        setResendCooldown(30);
+      } else {
+        setError(err.message || "Failed to resend email.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerify = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      await onVerify();
+    } catch (err: any) {
+      setError(err.message || "Verification failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <OnboardingLayout 
       currentStep="email-verification"
@@ -623,15 +670,33 @@ const EmailVerification = ({ email, onVerify, onBack, onResend }: { email: strin
         We’ve sent a verification link to <span className="text-hum-navy font-bold">{email}</span>. Please check your inbox to continue.
       </p>
 
+      {error && (
+        <div className="bg-hum-coral/10 border-2 border-hum-coral p-4 rounded-2xl mb-6">
+          <p className="text-hum-navy text-sm font-bold italic leading-tight">{error}</p>
+        </div>
+      )}
+
+      {success && (
+        <div className="bg-hum-teal/10 border-2 border-hum-teal p-4 rounded-2xl mb-6">
+          <p className="text-hum-navy text-sm font-bold italic leading-tight">{success}</p>
+        </div>
+      )}
+
       <div className="space-y-4 mb-10">
-        <Button onClick={onVerify} variant="secondary" className="w-full text-xl py-5 bg-hum-teal text-white border-2 border-hum-navy shadow-[6px_6px_0px_0px_rgba(22,55,71,1)]">
+        <Button 
+          onClick={handleVerify} 
+          variant="secondary" 
+          loading={loading}
+          className="w-full text-xl py-5 bg-hum-teal text-white border-2 border-hum-navy shadow-[6px_6px_0px_0px_rgba(22,55,71,1)]"
+        >
           I've Verified My Email
         </Button>
         <button 
-          onClick={onResend}
-          className="w-full text-xs font-black uppercase tracking-widest text-hum-navy/40 hover:text-hum-navy transition-all py-2"
+          onClick={handleResend}
+          disabled={resendCooldown > 0 || loading}
+          className={`w-full text-xs font-black uppercase tracking-widest transition-all py-2 ${resendCooldown > 0 || loading ? 'text-hum-navy/20 cursor-not-allowed' : 'text-hum-navy/40 hover:text-hum-navy'}`}
         >
-          Resend Verification Email
+          {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Verification Email'}
         </button>
       </div>
 
@@ -2385,19 +2450,28 @@ export default function App() {
 
   const handleEmailVerified = async () => {
     if (auth.currentUser) {
-      await auth.currentUser.reload();
-      if (auth.currentUser.emailVerified) {
-        setOnboardingStep('welcome');
-      } else {
-        alert("Please verify your email first. Check your inbox for the link.");
+      try {
+        await auth.currentUser.reload();
+        if (auth.currentUser.emailVerified) {
+          setOnboardingStep('welcome');
+        } else {
+          throw new Error("Please verify your email first. Check your inbox for the link.");
+        }
+      } catch (error) {
+        console.error("Verification check failed:", error);
+        throw error;
       }
     }
   };
 
   const handleResendEmail = async () => {
     if (auth.currentUser) {
-      await sendEmailVerification(auth.currentUser);
-      alert("Verification email resent!");
+      try {
+        await sendEmailVerification(auth.currentUser);
+      } catch (error) {
+        console.error("Resend failed:", error);
+        throw error;
+      }
     }
   };
 

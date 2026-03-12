@@ -30,83 +30,10 @@ import {
   Quote
 } from 'lucide-react';
 
-// Firebase Imports
-import { auth, db } from './firebase';
-import { 
-  onAuthStateChanged, 
-  signInWithPopup, 
-  GoogleAuthProvider, 
-  signOut,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendEmailVerification,
-  User as FirebaseUser
-} from 'firebase/auth';
-import { 
-  doc, 
-  setDoc, 
-  getDoc, 
-  collection, 
-  onSnapshot,
-  getDocFromServer,
-  Timestamp
-} from 'firebase/firestore';
-
 // --- Types ---
 
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId: string | undefined;
-    email: string | null | undefined;
-    emailVerified: boolean | undefined;
-    isAnonymous: boolean | undefined;
-    tenantId: string | null | undefined;
-    providerInfo: {
-      providerId: string;
-      displayName: string | null;
-      email: string | null;
-      photoUrl: string | null;
-    }[];
-  }
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData.map(provider => ({
-        providerId: provider.providerId,
-        displayName: provider.displayName,
-        email: provider.email,
-        photoUrl: provider.photoURL
-      })) || []
-    },
-    operationType,
-    path
-  }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
-
 type Step = 'landing' | 'onboarding' | 'strategy' | 'content' | 'export' | 'thankyou' | 'how-it-works' | 'about';
-type OnboardingStep = 'package-selection' | 'account-creation' | 'email-verification' | 'welcome' | 'strategy-intro' | 'strategy-builder';
+type OnboardingStep = 'package-selection' | 'account-creation' | 'welcome' | 'strategy-intro' | 'strategy-builder';
 
 // --- Components ---
 
@@ -257,7 +184,6 @@ const OnboardingLayout = ({
 }) => {
   const steps = [
     { id: 'account-creation', label: 'Account' },
-    { id: 'email-verification', label: 'Verify' },
     { id: 'welcome', label: 'Welcome' },
     { id: 'strategy-intro', label: 'Strategy' },
   ];
@@ -557,39 +483,11 @@ const AccountCreation = ({ onContinue, onLogin, onBack }: { onContinue: (data: {
         {error && (
           <div className="bg-hum-coral/10 border-2 border-hum-coral p-4 rounded-2xl mb-4">
             <p className="text-hum-coral text-xs font-black uppercase tracking-widest mb-2">
-              {error.code === 'auth/operation-not-allowed' ? 'Action Required' : 'Error'}
+              Error
             </p>
             <p className="text-hum-navy text-sm font-bold italic leading-tight">
-              {error.code === 'auth/operation-not-allowed' 
-                ? "Email/Password sign-in is disabled. Please enable it in your Firebase Console (Authentication > Sign-in method)."
-                : error.code === 'auth/too-many-requests'
-                ? "Too many attempts. We've temporarily blocked requests from this device. Please wait a few minutes and try again."
-                : error.code === 'auth/email-already-in-use'
-                ? "This email is already in use. If you've already signed up, you can try logging in below."
-                : error.code === 'auth/visibility-check-was-unavailable'
-                ? "Browser security check failed. This often happens in background tabs or if the window lost focus. Please try clicking 'Continue' again."
-                : error.message}
+              {error.message || "An error occurred. Please try again."}
             </p>
-            {error.code === 'auth/operation-not-allowed' && (
-              <a 
-                href="https://console.firebase.google.com/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-block mt-2 text-[10px] font-black uppercase tracking-widest text-hum-coral underline"
-              >
-                Go to Firebase Console
-              </a>
-            )}
-            {error.code === 'auth/email-already-in-use' && (
-              <Button 
-                onClick={handleLogin} 
-                variant="secondary" 
-                loading={loading}
-                className="w-full mt-4 bg-hum-teal text-white border-2 border-hum-navy shadow-[4px_4px_0px_0px_rgba(22,55,71,1)]"
-              >
-                Login with this email
-              </Button>
-            )}
           </div>
         )}
 
@@ -603,20 +501,6 @@ const AccountCreation = ({ onContinue, onLogin, onBack }: { onContinue: (data: {
         </Button>
       </form>
 
-      <div className="relative mb-8">
-        <div className="absolute inset-0 flex items-center"><div className="w-full border-t-2 border-hum-navy/10"></div></div>
-        <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest"><span className="bg-hum-cream px-4 text-hum-navy/40">Or continue with</span></div>
-      </div>
-
-      <button 
-        type="button"
-        onClick={() => onContinue({ ...formData, email: 'google-auth' })}
-        className="w-full flex items-center justify-center gap-4 bg-white border-2 border-hum-navy p-4 rounded-2xl font-black uppercase tracking-tight text-hum-navy hover:bg-hum-navy hover:text-white transition-all"
-      >
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
-        Google
-      </button>
-
       <p className="text-[10px] text-hum-navy/40 font-bold uppercase tracking-widest text-center mt-8">
         By continuing, you agree to our Terms of Service and Privacy Policy.
       </p>
@@ -624,120 +508,6 @@ const AccountCreation = ({ onContinue, onLogin, onBack }: { onContinue: (data: {
   );
 };
 
-const EmailVerification = ({ email, onVerify, onBack, onResend, onStartOver }: { email: string, onVerify: () => Promise<void>, onBack: () => void, onResend: () => Promise<void>, onStartOver: () => void }) => {
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
-
-  const handleResend = async () => {
-    if (resendCooldown > 0 || loading) return;
-    setLoading(true);
-    setError('');
-    setSuccess('');
-    try {
-      await onResend();
-      setSuccess("Verification email resent! Please check your inbox.");
-      setResendCooldown(60); // 60 second cooldown
-    } catch (err: any) {
-      if (err.code === 'auth/too-many-requests') {
-        setError("Too many requests. Please wait a moment before trying again.");
-        setResendCooldown(30);
-      } else {
-        setError(err.message || "Failed to resend email.");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerify = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      await onVerify();
-    } catch (err: any) {
-      setError(err.message || "Verification failed.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <OnboardingLayout 
-      currentStep="email-verification"
-      onBackToHome={onStartOver}
-      rightPanelContent={
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-hum-cyan p-10 rounded-[3rem] border-4 border-hum-navy shadow-[12px_12px_0px_0px_rgba(22,55,71,1)]"
-        >
-          <div className="w-20 h-20 bg-white rounded-2xl border-2 border-hum-navy flex items-center justify-center mb-8 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)]">
-            <MessageSquare className="text-hum-teal w-10 h-10" />
-          </div>
-          <h3 className="text-3xl font-black uppercase tracking-tighter text-hum-navy mb-4">Secure & Ready.</h3>
-          <p className="text-hum-navy font-bold italic leading-relaxed">
-            "We've sent a secure link to your inbox. One click and you're in the engine room."
-          </p>
-        </motion.div>
-      }
-    >
-      <h2 className="text-4xl font-black uppercase tracking-tighter mb-4 text-hum-navy leading-none">
-        Verify your <span className="text-hum-coral italic">email.</span>
-      </h2>
-      <p className="text-lg text-hum-navy/60 mb-10 font-medium italic leading-relaxed">
-        We’ve sent a verification link to <span className="text-hum-navy font-bold">{email}</span>. Please check your inbox to continue.
-      </p>
-
-      {error && (
-        <div className="bg-hum-coral/10 border-2 border-hum-coral p-4 rounded-2xl mb-6">
-          <p className="text-hum-navy text-sm font-bold italic leading-tight">{error}</p>
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-hum-teal/10 border-2 border-hum-teal p-4 rounded-2xl mb-6">
-          <p className="text-hum-navy text-sm font-bold italic leading-tight">{success}</p>
-        </div>
-      )}
-
-      <div className="space-y-4 mb-10">
-        <Button 
-          onClick={handleVerify} 
-          variant="secondary" 
-          loading={loading}
-          className="w-full text-xl py-5 bg-hum-teal text-white border-2 border-hum-navy shadow-[6px_6px_0px_0px_rgba(22,55,71,1)]"
-        >
-          I've Verified My Email
-        </Button>
-        <button 
-          onClick={handleResend}
-          disabled={resendCooldown > 0 || loading}
-          className={`w-full text-xs font-black uppercase tracking-widest transition-all py-2 ${resendCooldown > 0 || loading ? 'text-hum-navy/20 cursor-not-allowed' : 'text-hum-navy/40 hover:text-hum-navy'}`}
-        >
-          {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend Verification Email'}
-        </button>
-      </div>
-
-      <div className="flex flex-col items-center space-y-4">
-        <button onClick={onBack} className="text-xs font-black uppercase tracking-widest text-hum-teal hover:underline">
-          Change email address
-        </button>
-        <button onClick={onStartOver} className="text-[10px] font-black uppercase tracking-widest text-hum-navy/30 hover:text-hum-navy transition-all">
-          Start From Beginning
-        </button>
-      </div>
-    </OnboardingLayout>
-  );
-};
 
 const WelcomeScreen = ({ onStart, onBack }: { onStart: () => void, onBack: () => void }) => {
   return (
@@ -2366,121 +2136,66 @@ export default function App() {
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('package-selection');
   const [strategyData, setStrategyData] = useState(null);
   const [pendingUserData, setPendingUserData] = useState<any>(null);
-  const [user, setUser] = useState<FirebaseUser | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState('standard');
   const cardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setIsAuthReady(true);
-      
-      if (currentUser) {
-        // If user is logged in but not verified, show verification screen
-        if (!currentUser.emailVerified && currentUser.providerData[0]?.providerId === 'password') {
-          if (view === 'onboarding' && onboardingStep !== 'email-verification') {
-            setOnboardingStep('email-verification');
-          }
-        } else if (view === 'onboarding' && onboardingStep === 'account-creation') {
-          setOnboardingStep('welcome');
-        }
-      }
-    });
-
-    // Test connection
-    const testConnection = async () => {
-      try {
-        await getDocFromServer(doc(db, 'test', 'connection'));
-      } catch (error) {
-        if(error instanceof Error && error.message.includes('the client is offline')) {
-          console.error("Please check your Firebase configuration. ");
-        }
-      }
-    };
-    testConnection();
-
-    return () => unsubscribe();
-  }, [view, onboardingStep]);
+    // Mock auth initialization
+    setIsAuthReady(true);
+  }, []);
 
   const login = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      // Save user profile to Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        email: user.email,
-        firstName: user.displayName?.split(' ')[0] || '',
-        lastName: user.displayName?.split(' ').slice(1).join(' ') || '',
-        selectedPackage: selectedPackage,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      }, { merge: true });
-
-    } catch (error) {
-      console.error("Login failed:", error);
-    }
+    // Mock login
+    const mockUser = {
+      uid: 'mock-user-id',
+      email: 'demo@example.com',
+      displayName: 'Demo User'
+    };
+    setUser(mockUser);
+    return mockUser;
   };
 
   const signIn = async (email: string) => {
-    try {
-      const tempPassword = 'SocialHumTempPassword123!'; 
-      await signInWithEmailAndPassword(auth, email, tempPassword);
-    } catch (error: any) {
-      if (error.code === 'auth/visibility-check-was-unavailable') {
-        // Retry once automatically or throw to let UI handle it
-        try {
-          const tempPassword = 'SocialHumTempPassword123!'; 
-          await signInWithEmailAndPassword(auth, email, tempPassword);
-          return;
-        } catch (retryError) {
-          throw retryError;
-        }
-      }
-      console.error("Sign in failed:", error);
-      throw error;
-    }
+    // Mock sign in
+    const mockUser = {
+      uid: 'mock-user-id',
+      email: email,
+      displayName: 'Demo User'
+    };
+    setUser(mockUser);
   };
 
   const signUp = async (data: { firstName: string, lastName: string, email: string, companyName: string }) => {
-    if (data.email === 'google-auth') {
-      login();
-      return;
-    }
-
     try {
-      // Use a temporary password for now, or we could use magic links
-      // For this demo, let's use a simple password flow but focus on verification
-      const tempPassword = 'SocialHumTempPassword123!'; 
-      let user;
+      // Mock user creation
+      const mockUser = {
+        uid: 'mock-user-id-' + Date.now(),
+        email: data.email,
+        displayName: `${data.firstName} ${data.lastName}`
+      };
       
+      setUser(mockUser);
+
+      // Sync with HubSpot
       try {
-        const result = await createUserWithEmailAndPassword(auth, data.email, tempPassword);
-        user = result.user;
-        
-        await sendEmailVerification(user);
-        
-        await setDoc(doc(db, 'users', user.uid), {
-          uid: user.uid,
-          email: data.email,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          companyName: data.companyName,
-          selectedPackage: selectedPackage,
-          createdAt: Timestamp.now(),
-          updatedAt: Timestamp.now()
+        await fetch('/api/hubspot/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            businessName: data.companyName,
+          }),
         });
-      } catch (error: any) {
-        // If already in use, we'll let the UI show the error and the "Login" button
-        // This avoids rapid sequential auth calls that can trigger visibility checks
-        throw error;
+      } catch (hsError) {
+        console.error("HubSpot sync failed:", hsError);
       }
 
       setPendingUserData(data);
-      setOnboardingStep('email-verification');
+      setOnboardingStep('welcome');
     } catch (error: any) {
       console.error("Sign up failed:", error);
       throw error;
@@ -2488,15 +2203,11 @@ export default function App() {
   };
 
   const logout = async () => {
-    try {
-      await signOut(auth);
-      setView('landing');
-      setOnboardingStep('package-selection');
-      setPendingUserData(null);
-      setStrategyData(null);
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
+    setUser(null);
+    setView('landing');
+    setOnboardingStep('package-selection');
+    setPendingUserData(null);
+    setStrategyData(null);
   };
 
   const startFlow = () => setView('onboarding');
@@ -2508,33 +2219,6 @@ export default function App() {
 
   const handleAccountCreated = async (data: any) => {
     await signUp(data);
-  };
-
-  const handleEmailVerified = async () => {
-    if (auth.currentUser) {
-      try {
-        await auth.currentUser.reload();
-        if (auth.currentUser.emailVerified) {
-          setOnboardingStep('welcome');
-        } else {
-          throw new Error("Please verify your email first. Check your inbox for the link.");
-        }
-      } catch (error) {
-        console.error("Verification check failed:", error);
-        throw error;
-      }
-    }
-  };
-
-  const handleResendEmail = async () => {
-    if (auth.currentUser) {
-      try {
-        await sendEmailVerification(auth.currentUser);
-      } catch (error) {
-        console.error("Resend failed:", error);
-        throw error;
-      }
-    }
   };
 
   const handleStartStrategy = () => {
@@ -2549,34 +2233,15 @@ export default function App() {
     setStrategyData(data);
     
     if (user) {
-      // Final check for verification before "sending" (saving) strategy
-      if (!user.emailVerified && user.providerData[0]?.providerId === 'password') {
-        alert("Please verify your email address before we can send your strategy.");
-        setOnboardingStep('email-verification');
-        return;
-      }
-
       try {
-        const strategyId = `${user.uid}_${Date.now()}`;
-        await setDoc(doc(db, 'strategies', strategyId), {
-          userId: user.uid,
-          businessName: data.businessName || 'My Business',
-          industry: data.industry || 'Professional Services',
-          targetAudience: data.targetAudience || '',
-          goals: [data.primaryGoals, data.currentPriority].filter(Boolean),
-          tone: data.toneGuidelines || '',
-          platforms: [
-            data.linkedinUrl && 'LinkedIn',
-            data.instagramUrl && 'Instagram',
-            data.facebookUrl && 'Facebook',
-            data.twitterUrl && 'Twitter',
-            data.tiktokUrl && 'TikTok'
-          ].filter(Boolean),
-          createdAt: Timestamp.now()
-        });
+        // Mock saving strategy
+        console.log("Mock saving strategy for user:", user.uid, data);
+        setView('strategy');
       } catch (error) {
-        handleFirestoreError(error, OperationType.CREATE, 'strategies');
+        console.error("Failed to save strategy:", error);
       }
+    } else {
+      setView('strategy');
     }
     
     setView('thankyou');
@@ -2674,15 +2339,6 @@ export default function App() {
                 onContinue={handleAccountCreated} 
                 onLogin={signIn}
                 onBack={() => setView('landing')} 
-              />
-            )}
-            {onboardingStep === 'email-verification' && (
-              <EmailVerification 
-                email={user?.email || pendingUserData?.email || ''} 
-                onVerify={handleEmailVerified} 
-                onBack={() => setOnboardingStep('account-creation')} 
-                onResend={handleResendEmail}
-                onStartOver={logout}
               />
             )}
             {onboardingStep === 'welcome' && (

@@ -37,6 +37,8 @@ import {
   signInWithPopup, 
   GoogleAuthProvider, 
   signOut,
+  createUserWithEmailAndPassword,
+  sendEmailVerification,
   User as FirebaseUser
 } from 'firebase/auth';
 import { 
@@ -155,12 +157,18 @@ const Button = ({
   children, 
   onClick, 
   variant = 'primary', 
-  className = "" 
+  className = "",
+  type = "button",
+  loading = false,
+  disabled = false
 }: { 
   children: React.ReactNode; 
   onClick?: () => void; 
   variant?: 'primary' | 'secondary' | 'outline';
   className?: string;
+  type?: "button" | "submit" | "reset";
+  loading?: boolean;
+  disabled?: boolean;
 }) => {
   const variants = {
     primary: "bg-hum-yellow text-hum-navy",
@@ -170,10 +178,17 @@ const Button = ({
 
   return (
     <button 
+      type={type}
       onClick={onClick}
-      className={`hum-btn ${variants[variant]} ${className}`}
+      disabled={disabled || loading}
+      className={`hum-btn ${variants[variant]} ${className} ${loading || disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
-      {children}
+      {loading ? (
+        <div className="flex items-center justify-center">
+          <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mr-2" />
+          Processing...
+        </div>
+      ) : children}
     </button>
   );
 };
@@ -428,7 +443,33 @@ const PackageSelection = ({ onSelect, onBack }: { onSelect: (id: string) => void
   );
 };
 
-const AccountCreation = ({ onContinue, onBack }: { onContinue: () => void, onBack: () => void }) => {
+const AccountCreation = ({ onContinue, onBack }: { onContinue: (data: { firstName: string, lastName: string, email: string, companyName: string }) => Promise<void>, onBack: () => void }) => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    companyName: ''
+  });
+  const [error, setError] = useState<{ message: string, code?: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.companyName) {
+      setError({ message: 'All fields are required' });
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      await onContinue(formData);
+    } catch (err: any) {
+      setError({ message: err.message || 'Something went wrong', code: err.code });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <OnboardingLayout 
       currentStep="account-creation"
@@ -452,28 +493,109 @@ const AccountCreation = ({ onContinue, onBack }: { onContinue: () => void, onBac
       <h2 className="text-4xl font-black uppercase tracking-tighter mb-4 text-hum-navy leading-none">
         Create your <span className="text-hum-teal italic">account.</span>
       </h2>
-      <p className="text-lg text-hum-navy/60 mb-10 font-medium italic">
-        We use Google for secure authentication.
+      <p className="text-lg text-hum-navy/60 mb-8 font-medium italic">
+        Enter your details to start your 7-day free trial.
       </p>
 
-      <div className="space-y-6 mb-10">
-        <button 
-          onClick={onContinue}
-          className="w-full flex items-center justify-center gap-4 bg-white border-4 border-hum-navy p-6 rounded-3xl font-black uppercase tracking-tight text-hum-navy shadow-[8px_8px_0px_0px_rgba(22,55,71,1)] hover:translate-y-[-2px] transition-all"
+      <form onSubmit={handleSubmit} className="space-y-4 mb-8">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-hum-navy/40 mb-2 ml-4">First Name</label>
+            <input 
+              type="text"
+              value={formData.firstName}
+              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+              className="w-full bg-white border-2 border-hum-navy p-4 rounded-2xl font-bold text-hum-navy focus:outline-none focus:ring-2 focus:ring-hum-teal/20"
+              placeholder="Jo"
+            />
+          </div>
+          <div>
+            <label className="block text-[10px] font-black uppercase tracking-widest text-hum-navy/40 mb-2 ml-4">Last Name</label>
+            <input 
+              type="text"
+              value={formData.lastName}
+              onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+              className="w-full bg-white border-2 border-hum-navy p-4 rounded-2xl font-bold text-hum-navy focus:outline-none focus:ring-2 focus:ring-hum-teal/20"
+              placeholder="Sharma"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-[10px] font-black uppercase tracking-widest text-hum-navy/40 mb-2 ml-4">Email Address</label>
+          <input 
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            className="w-full bg-white border-2 border-hum-navy p-4 rounded-2xl font-bold text-hum-navy focus:outline-none focus:ring-2 focus:ring-hum-teal/20"
+            placeholder="jo@example.com"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-black uppercase tracking-widest text-hum-navy/40 mb-2 ml-4">Company Name</label>
+          <input 
+            type="text"
+            value={formData.companyName}
+            onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+            className="w-full bg-white border-2 border-hum-navy p-4 rounded-2xl font-bold text-hum-navy focus:outline-none focus:ring-2 focus:ring-hum-teal/20"
+            placeholder="Drum Digital"
+          />
+        </div>
+
+        {error && (
+          <div className="bg-hum-coral/10 border-2 border-hum-coral p-4 rounded-2xl mb-4">
+            <p className="text-hum-coral text-xs font-black uppercase tracking-widest mb-2">
+              {error.code === 'auth/operation-not-allowed' ? 'Action Required' : 'Error'}
+            </p>
+            <p className="text-hum-navy text-sm font-bold italic leading-tight">
+              {error.code === 'auth/operation-not-allowed' 
+                ? "Email/Password sign-in is disabled. Please enable it in your Firebase Console (Authentication > Sign-in method)."
+                : error.message}
+            </p>
+            {error.code === 'auth/operation-not-allowed' && (
+              <a 
+                href="https://console.firebase.google.com/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-block mt-2 text-[10px] font-black uppercase tracking-widest text-hum-coral underline"
+              >
+                Go to Firebase Console
+              </a>
+            )}
+          </div>
+        )}
+
+        <Button 
+          type="submit" 
+          variant="secondary" 
+          loading={loading}
+          className="w-full text-xl py-5 bg-hum-teal text-white border-2 border-hum-navy shadow-[6px_6px_0px_0px_rgba(22,55,71,1)] mt-4"
         >
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
-          Continue with Google
-        </button>
+          Continue <ArrowRight className="inline-block ml-2 w-6 h-6" />
+        </Button>
+      </form>
+
+      <div className="relative mb-8">
+        <div className="absolute inset-0 flex items-center"><div className="w-full border-t-2 border-hum-navy/10"></div></div>
+        <div className="relative flex justify-center text-[10px] font-black uppercase tracking-widest"><span className="bg-hum-cream px-4 text-hum-navy/40">Or continue with</span></div>
       </div>
 
-      <p className="text-[10px] text-hum-navy/40 font-bold uppercase tracking-widest text-center">
+      <button 
+        type="button"
+        onClick={() => onContinue({ ...formData, email: 'google-auth' })}
+        className="w-full flex items-center justify-center gap-4 bg-white border-2 border-hum-navy p-4 rounded-2xl font-black uppercase tracking-tight text-hum-navy hover:bg-hum-navy hover:text-white transition-all"
+      >
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-6 h-6" />
+        Google
+      </button>
+
+      <p className="text-[10px] text-hum-navy/40 font-bold uppercase tracking-widest text-center mt-8">
         By continuing, you agree to our Terms of Service and Privacy Policy.
       </p>
     </OnboardingLayout>
   );
 };
 
-const EmailVerification = ({ onVerify, onBack }: { onVerify: () => void, onBack: () => void }) => {
+const EmailVerification = ({ email, onVerify, onBack, onResend }: { email: string, onVerify: () => void, onBack: () => void, onResend: () => void }) => {
   return (
     <OnboardingLayout 
       currentStep="email-verification"
@@ -498,19 +620,22 @@ const EmailVerification = ({ onVerify, onBack }: { onVerify: () => void, onBack:
         Verify your <span className="text-hum-coral italic">email.</span>
       </h2>
       <p className="text-lg text-hum-navy/60 mb-10 font-medium italic leading-relaxed">
-        We’ve sent a verification link to <span className="text-hum-navy font-bold">joanna@drumdigital.com.au</span>. Please check your inbox to continue.
+        We’ve sent a verification link to <span className="text-hum-navy font-bold">{email}</span>. Please check your inbox to continue.
       </p>
 
       <div className="space-y-4 mb-10">
         <Button onClick={onVerify} variant="secondary" className="w-full text-xl py-5 bg-hum-teal text-white border-2 border-hum-navy shadow-[6px_6px_0px_0px_rgba(22,55,71,1)]">
-          Open Email App
+          I've Verified My Email
         </Button>
-        <button className="w-full text-xs font-black uppercase tracking-widest text-hum-navy/40 hover:text-hum-navy transition-all py-2">
+        <button 
+          onClick={onResend}
+          className="w-full text-xs font-black uppercase tracking-widest text-hum-navy/40 hover:text-hum-navy transition-all py-2"
+        >
           Resend Verification Email
         </button>
       </div>
 
-      <button className="text-xs font-black uppercase tracking-widest text-hum-teal hover:underline">
+      <button onClick={onBack} className="text-xs font-black uppercase tracking-widest text-hum-teal hover:underline">
         Change email address
       </button>
     </OnboardingLayout>
@@ -2143,6 +2268,7 @@ export default function App() {
   const [view, setView] = useState<Step>('landing');
   const [onboardingStep, setOnboardingStep] = useState<OnboardingStep>('package-selection');
   const [strategyData, setStrategyData] = useState(null);
+  const [pendingUserData, setPendingUserData] = useState<any>(null);
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState('standard');
@@ -2153,9 +2279,16 @@ export default function App() {
       setUser(currentUser);
       setIsAuthReady(true);
       
-      // If user is logged in and we are on onboarding, move forward
-      if (currentUser && view === 'onboarding' && onboardingStep === 'account-creation') {
-        setOnboardingStep('welcome');
+      if (currentUser) {
+        // If user is logged in but not verified, show verification screen
+        // Only if they are in the onboarding flow and not already on the verification or account creation step
+        if (!currentUser.emailVerified && currentUser.providerData[0]?.providerId === 'password') {
+          if (view === 'onboarding' && onboardingStep !== 'email-verification' && onboardingStep !== 'account-creation') {
+            setOnboardingStep('email-verification');
+          }
+        } else if (view === 'onboarding' && onboardingStep === 'account-creation') {
+          setOnboardingStep('welcome');
+        }
       }
     });
 
@@ -2196,6 +2329,40 @@ export default function App() {
     }
   };
 
+  const signUp = async (data: { firstName: string, lastName: string, email: string, companyName: string }) => {
+    if (data.email === 'google-auth') {
+      login();
+      return;
+    }
+
+    try {
+      // Use a temporary password for now, or we could use magic links
+      // For this demo, let's use a simple password flow but focus on verification
+      const tempPassword = 'SocialHumTempPassword123!'; 
+      const result = await createUserWithEmailAndPassword(auth, data.email, tempPassword);
+      const user = result.user;
+
+      await sendEmailVerification(user);
+      
+      await setDoc(doc(db, 'users', user.uid), {
+        uid: user.uid,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        companyName: data.companyName,
+        selectedPackage: selectedPackage,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now()
+      });
+
+      setPendingUserData(data);
+      setOnboardingStep('email-verification');
+    } catch (error: any) {
+      console.error("Sign up failed:", error);
+      throw error;
+    }
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -2212,12 +2379,26 @@ export default function App() {
     setOnboardingStep('account-creation');
   };
 
-  const handleAccountCreated = () => {
-    login();
+  const handleAccountCreated = async (data: any) => {
+    await signUp(data);
   };
 
-  const handleEmailVerified = () => {
-    setOnboardingStep('welcome');
+  const handleEmailVerified = async () => {
+    if (auth.currentUser) {
+      await auth.currentUser.reload();
+      if (auth.currentUser.emailVerified) {
+        setOnboardingStep('welcome');
+      } else {
+        alert("Please verify your email first. Check your inbox for the link.");
+      }
+    }
+  };
+
+  const handleResendEmail = async () => {
+    if (auth.currentUser) {
+      await sendEmailVerification(auth.currentUser);
+      alert("Verification email resent!");
+    }
   };
 
   const handleStartStrategy = () => {
@@ -2232,6 +2413,13 @@ export default function App() {
     setStrategyData(data);
     
     if (user) {
+      // Final check for verification before "sending" (saving) strategy
+      if (!user.emailVerified && user.providerData[0]?.providerId === 'password') {
+        alert("Please verify your email address before we can send your strategy.");
+        setOnboardingStep('email-verification');
+        return;
+      }
+
       try {
         const strategyId = `${user.uid}_${Date.now()}`;
         await setDoc(doc(db, 'strategies', strategyId), {
@@ -2349,7 +2537,12 @@ export default function App() {
               <AccountCreation onContinue={handleAccountCreated} onBack={() => setView('landing')} />
             )}
             {onboardingStep === 'email-verification' && (
-              <EmailVerification onVerify={handleEmailVerified} onBack={() => setView('landing')} />
+              <EmailVerification 
+                email={user?.email || pendingUserData?.email || ''} 
+                onVerify={handleEmailVerified} 
+                onBack={() => setView('landing')} 
+                onResend={handleResendEmail}
+              />
             )}
             {onboardingStep === 'welcome' && (
               <WelcomeScreen onStart={handleStartStrategy} onBack={() => setView('landing')} />

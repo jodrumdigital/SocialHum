@@ -597,7 +597,7 @@ const AccountCreation = ({ onContinue, onBack }: { onContinue: (data: { firstNam
   );
 };
 
-const EmailVerification = ({ email, onVerify, onBack, onResend }: { email: string, onVerify: () => Promise<void>, onBack: () => void, onResend: () => Promise<void> }) => {
+const EmailVerification = ({ email, onVerify, onBack, onResend, onStartOver }: { email: string, onVerify: () => Promise<void>, onBack: () => void, onResend: () => Promise<void>, onStartOver: () => void }) => {
   const [resendCooldown, setResendCooldown] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -646,7 +646,7 @@ const EmailVerification = ({ email, onVerify, onBack, onResend }: { email: strin
   return (
     <OnboardingLayout 
       currentStep="email-verification"
-      onBackToHome={onBack}
+      onBackToHome={onStartOver}
       rightPanelContent={
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -700,9 +700,14 @@ const EmailVerification = ({ email, onVerify, onBack, onResend }: { email: strin
         </button>
       </div>
 
-      <button onClick={onBack} className="text-xs font-black uppercase tracking-widest text-hum-teal hover:underline">
-        Change email address
-      </button>
+      <div className="flex flex-col items-center space-y-4">
+        <button onClick={onBack} className="text-xs font-black uppercase tracking-widest text-hum-teal hover:underline">
+          Change email address
+        </button>
+        <button onClick={onStartOver} className="text-[10px] font-black uppercase tracking-widest text-hum-navy/30 hover:text-hum-navy transition-all">
+          Start From Beginning
+        </button>
+      </div>
     </OnboardingLayout>
   );
 };
@@ -2432,6 +2437,9 @@ export default function App() {
     try {
       await signOut(auth);
       setView('landing');
+      setOnboardingStep('package-selection');
+      setPendingUserData(null);
+      setStrategyData(null);
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -2614,8 +2622,9 @@ export default function App() {
               <EmailVerification 
                 email={user?.email || pendingUserData?.email || ''} 
                 onVerify={handleEmailVerified} 
-                onBack={() => setView('landing')} 
+                onBack={() => setOnboardingStep('account-creation')} 
                 onResend={handleResendEmail}
+                onStartOver={logout}
               />
             )}
             {onboardingStep === 'welcome' && (

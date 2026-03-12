@@ -566,6 +566,8 @@ const AccountCreation = ({ onContinue, onLogin, onBack }: { onContinue: (data: {
                 ? "Too many attempts. We've temporarily blocked requests from this device. Please wait a few minutes and try again."
                 : error.code === 'auth/email-already-in-use'
                 ? "This email is already in use. If you've already signed up, you can try logging in below."
+                : error.code === 'auth/visibility-check-was-unavailable'
+                ? "Browser security check failed. This often happens in background tabs or if the window lost focus. Please try clicking 'Continue' again."
                 : error.message}
             </p>
             {error.code === 'auth/operation-not-allowed' && (
@@ -2376,9 +2378,8 @@ export default function App() {
       
       if (currentUser) {
         // If user is logged in but not verified, show verification screen
-        // Only if they are in the onboarding flow and not already on the verification or account creation step
         if (!currentUser.emailVerified && currentUser.providerData[0]?.providerId === 'password') {
-          if (view === 'onboarding' && onboardingStep !== 'email-verification' && onboardingStep !== 'account-creation') {
+          if (view === 'onboarding' && onboardingStep !== 'email-verification') {
             setOnboardingStep('email-verification');
           }
         } else if (view === 'onboarding' && onboardingStep === 'account-creation') {
@@ -2429,6 +2430,16 @@ export default function App() {
       const tempPassword = 'SocialHumTempPassword123!'; 
       await signInWithEmailAndPassword(auth, email, tempPassword);
     } catch (error: any) {
+      if (error.code === 'auth/visibility-check-was-unavailable') {
+        // Retry once automatically or throw to let UI handle it
+        try {
+          const tempPassword = 'SocialHumTempPassword123!'; 
+          await signInWithEmailAndPassword(auth, email, tempPassword);
+          return;
+        } catch (retryError) {
+          throw retryError;
+        }
+      }
       console.error("Sign in failed:", error);
       throw error;
     }
@@ -2444,21 +2455,29 @@ export default function App() {
       // Use a temporary password for now, or we could use magic links
       // For this demo, let's use a simple password flow but focus on verification
       const tempPassword = 'SocialHumTempPassword123!'; 
-      const result = await createUserWithEmailAndPassword(auth, data.email, tempPassword);
-      const user = result.user;
-
-      await sendEmailVerification(user);
+      let user;
       
-      await setDoc(doc(db, 'users', user.uid), {
-        uid: user.uid,
-        email: data.email,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        companyName: data.companyName,
-        selectedPackage: selectedPackage,
-        createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
-      });
+      try {
+        const result = await createUserWithEmailAndPassword(auth, data.email, tempPassword);
+        user = result.user;
+        
+        await sendEmailVerification(user);
+        
+        await setDoc(doc(db, 'users', user.uid), {
+          uid: user.uid,
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          companyName: data.companyName,
+          selectedPackage: selectedPackage,
+          createdAt: Timestamp.now(),
+          updatedAt: Timestamp.now()
+        });
+      } catch (error: any) {
+        // If already in use, we'll let the UI show the error and the "Login" button
+        // This avoids rapid sequential auth calls that can trigger visibility checks
+        throw error;
+      }
 
       setPendingUserData(data);
       setOnboardingStep('email-verification');

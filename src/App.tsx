@@ -38,6 +38,7 @@ import {
   GoogleAuthProvider, 
   signOut,
   createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
   sendEmailVerification,
   User as FirebaseUser
 } from 'firebase/auth';
@@ -443,7 +444,7 @@ const PackageSelection = ({ onSelect, onBack }: { onSelect: (id: string) => void
   );
 };
 
-const AccountCreation = ({ onContinue, onBack }: { onContinue: (data: { firstName: string, lastName: string, email: string, companyName: string }) => Promise<void>, onBack: () => void }) => {
+const AccountCreation = ({ onContinue, onLogin, onBack }: { onContinue: (data: { firstName: string, lastName: string, email: string, companyName: string }) => Promise<void>, onLogin: (email: string) => Promise<void>, onBack: () => void }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -465,6 +466,18 @@ const AccountCreation = ({ onContinue, onBack }: { onContinue: (data: { firstNam
       await onContinue(formData);
     } catch (err: any) {
       setError({ message: err.message || 'Something went wrong', code: err.code });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await onLogin(formData.email);
+    } catch (err: any) {
+      setError({ message: err.message || 'Login failed', code: err.code });
     } finally {
       setLoading(false);
     }
@@ -551,6 +564,8 @@ const AccountCreation = ({ onContinue, onBack }: { onContinue: (data: { firstNam
                 ? "Email/Password sign-in is disabled. Please enable it in your Firebase Console (Authentication > Sign-in method)."
                 : error.code === 'auth/too-many-requests'
                 ? "Too many attempts. We've temporarily blocked requests from this device. Please wait a few minutes and try again."
+                : error.code === 'auth/email-already-in-use'
+                ? "This email is already in use. If you've already signed up, you can try logging in below."
                 : error.message}
             </p>
             {error.code === 'auth/operation-not-allowed' && (
@@ -562,6 +577,16 @@ const AccountCreation = ({ onContinue, onBack }: { onContinue: (data: { firstNam
               >
                 Go to Firebase Console
               </a>
+            )}
+            {error.code === 'auth/email-already-in-use' && (
+              <Button 
+                onClick={handleLogin} 
+                variant="secondary" 
+                loading={loading}
+                className="w-full mt-4 bg-hum-teal text-white border-2 border-hum-navy shadow-[4px_4px_0px_0px_rgba(22,55,71,1)]"
+              >
+                Login with this email
+              </Button>
             )}
           </div>
         )}
@@ -2399,6 +2424,16 @@ export default function App() {
     }
   };
 
+  const signIn = async (email: string) => {
+    try {
+      const tempPassword = 'SocialHumTempPassword123!'; 
+      await signInWithEmailAndPassword(auth, email, tempPassword);
+    } catch (error: any) {
+      console.error("Sign in failed:", error);
+      throw error;
+    }
+  };
+
   const signUp = async (data: { firstName: string, lastName: string, email: string, companyName: string }) => {
     if (data.email === 'google-auth') {
       login();
@@ -2616,7 +2651,11 @@ export default function App() {
               <PackageSelection onSelect={handlePackageSelect} onBack={() => setView('landing')} />
             )}
             {onboardingStep === 'account-creation' && (
-              <AccountCreation onContinue={handleAccountCreated} onBack={() => setView('landing')} />
+              <AccountCreation 
+                onContinue={handleAccountCreated} 
+                onLogin={signIn}
+                onBack={() => setView('landing')} 
+              />
             )}
             {onboardingStep === 'email-verification' && (
               <EmailVerification 

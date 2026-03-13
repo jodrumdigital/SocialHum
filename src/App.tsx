@@ -37,12 +37,13 @@ type OnboardingStep = 'package-selection' | 'account-creation' | 'welcome' | 'st
 
 // --- Components ---
 
-const Logo = ({ className = "", iconOnly = false, onClick }: { className?: string; iconOnly?: boolean; onClick?: () => void }) => {
+const Logo = ({ className = "", iconOnly = false, variant = 'default', onClick }: { className?: string; iconOnly?: boolean; variant?: 'default' | 'reverse'; onClick?: () => void }) => {
   const [imgError, setImgError] = useState(false);
+  const logoSrc = variant === 'reverse' ? '/logo_reverse.png.png' : '/logo.png';
 
   if (imgError) {
     return (
-      <div onClick={onClick} className={`flex items-center ${iconOnly ? "" : "gap-1"} text-hum-navy ${className} ${onClick ? 'cursor-pointer' : ''}`}>
+      <div onClick={onClick} className={`flex items-center ${iconOnly ? "" : "gap-1"} ${variant === 'reverse' ? 'text-white' : 'text-hum-navy'} ${className} ${onClick ? 'cursor-pointer' : ''}`}>
         {!iconOnly && <span className="font-black text-4xl tracking-tighter">SocialHum</span>}
         <div className={`${iconOnly ? "w-full h-full" : "w-16 h-16"} flex items-center justify-center`}>
           <svg viewBox="0 0 120 100" className="w-full h-full fill-none">
@@ -71,7 +72,7 @@ const Logo = ({ className = "", iconOnly = false, onClick }: { className?: strin
   return (
     <div onClick={onClick} className={`flex items-center ${iconOnly ? "" : "gap-1"} ${className} ${onClick ? 'cursor-pointer' : ''}`}>
       <img 
-        src="/logo.png" 
+        src={logoSrc} 
         alt="SocialHum Logo" 
         className={iconOnly ? "w-full h-full object-contain" : "h-16 w-auto object-contain"}
         referrerPolicy="no-referrer"
@@ -1009,7 +1010,7 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
       <footer className="bg-hum-navy text-white px-6 py-20">
         <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-12">
           <div className="md:col-span-2">
-            <Logo className="mb-8 invert" />
+            <Logo variant="reverse" className="mb-8" />
             <p className="text-hum-cream/60 max-w-sm mb-8">
               SocialHum is a product of Drum Digital. We turn strategic insights into consistent social momentum for professional services.
             </p>

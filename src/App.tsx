@@ -48,26 +48,35 @@ const Logo = ({
   variant?: 'default' | 'reverse';
   onClick?: () => void;
 }) => {
-  // Use a cache buster to ensure we're not seeing a cached 404
-  const timestamp = '20260315'; 
+  const timestamp = 'v1.5'; 
   const logoSrc = variant === 'reverse' ? `/logo_reverse.png?v=${timestamp}` : `/logo.png?v=${timestamp}`;
 
   return (
     <div
       onClick={onClick}
-      className={`flex items-center ${iconOnly ? "" : "gap-1"} ${className} ${onClick ? 'cursor-pointer' : ''}`}
-      style={{ minWidth: iconOnly ? 'auto' : '150px', minHeight: '40px' }}
+      className={`flex items-center ${className} ${onClick ? 'cursor-pointer' : ''}`}
+      style={{ 
+        width: iconOnly ? '40px' : '200px', 
+        height: '64px',
+        position: 'relative'
+      }}
     >
       <img
         src={logoSrc}
         alt="SocialHum Logo"
-        className={iconOnly ? "w-full h-full object-contain" : "h-16 w-auto object-contain"}
-        onLoad={() => console.log(`Successfully loaded: ${logoSrc}`)}
+        className="w-full h-full object-contain"
+        style={{ display: 'block' }}
         onError={(e) => {
-          console.error('CRITICAL: Logo failed to load:', e.currentTarget.src);
-          // If the absolute path fails, try one last ditch effort with a relative path
-          if (!e.currentTarget.src.includes('retry')) {
-            e.currentTarget.src = (variant === 'reverse' ? 'logo_reverse.png' : 'logo.png') + '?retry=true';
+          console.error('Logo failed to load:', logoSrc);
+          // If the image fails, we'll try to show a text fallback so the site isn't broken
+          e.currentTarget.style.opacity = '0';
+          const parent = e.currentTarget.parentElement;
+          if (parent && !parent.querySelector('.logo-fallback')) {
+            const fallback = document.createElement('span');
+            fallback.className = 'logo-fallback font-bold text-xl tracking-tight text-hum-charcoal';
+            fallback.innerText = 'SocialHum';
+            if (variant === 'reverse') fallback.classList.add('text-white');
+            parent.appendChild(fallback);
           }
         }}
       />
@@ -1036,7 +1045,7 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs font-mono font-bold uppercase tracking-widest text-hum-cream/40">
-          <span>© 2026 SocialHum. All rights reserved. [v1.4]</span>
+          <span>© 2026 SocialHum. All rights reserved. [v1.5]</span>
           <span>Built by Drum Digital</span>
         </div>
       </footer>

@@ -50,6 +50,10 @@ const Logo = ({
 }) => {
   const logoSrc = variant === 'reverse' ? '/logo_reverse.png' : '/logo.png';
 
+  useEffect(() => {
+    console.log(`Logo component rendered with src: ${logoSrc}`);
+  }, [logoSrc]);
+
   return (
     <div
       onClick={onClick}
@@ -60,8 +64,16 @@ const Logo = ({
         alt="SocialHum Logo"
         className={iconOnly ? "w-full h-full object-contain" : "h-16 w-auto object-contain"}
         onError={(e) => {
-          console.error('Logo failed to load:', logoSrc);
-          e.currentTarget.style.display = 'none';
+          console.error('Logo failed to load from URL:', e.currentTarget.src);
+          // Try a fallback if the absolute path fails
+          if (!e.currentTarget.src.includes('fallback')) {
+             console.log('Attempting relative path fallback...');
+             e.currentTarget.src = logoSrc.startsWith('/') ? logoSrc.substring(1) : logoSrc;
+             // Add a marker to prevent infinite loops
+             if (!e.currentTarget.src.includes('?')) e.currentTarget.src += '?fallback=true';
+          } else {
+             e.currentTarget.style.display = 'none';
+          }
         }}
       />
     </div>
@@ -1029,7 +1041,7 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs font-mono font-bold uppercase tracking-widest text-hum-cream/40">
-          <span>© 2026 SocialHum. All rights reserved. [v1.1]</span>
+          <span>© 2026 SocialHum. All rights reserved. [v1.3]</span>
           <span>Built by Drum Digital</span>
         </div>
       </footer>

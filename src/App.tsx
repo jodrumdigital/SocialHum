@@ -6,6 +6,8 @@
 import React, { useState, useEffect, useRef, Component, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toPng } from 'html-to-image';
+import logo from './assets/logo.png';
+import logoReverse from './assets/logo_reverse.png';
 import { 
   Bird, 
   CheckCircle2, 
@@ -48,28 +50,22 @@ const Logo = ({
   variant?: 'default' | 'reverse';
   onClick?: () => void;
 }) => {
+  const logoSrc = variant === 'reverse' ? logoReverse : logo;
+
   return (
     <div
       onClick={onClick}
-      className={`flex items-center ${iconOnly ? "" : "gap-1"} ${variant === 'reverse' ? 'text-white' : 'text-hum-navy'} ${className} ${onClick ? 'cursor-pointer' : ''}`}
+      className={`flex items-center ${iconOnly ? "" : "gap-1"} ${className} ${onClick ? 'cursor-pointer' : ''}`}
     >
-      {!iconOnly && (
-        <span className="font-black text-4xl tracking-tight">SocialHum</span>
-      )}
-      <div className={`${iconOnly ? "w-full h-full" : "w-16 h-16"} flex items-center justify-center`}>
-        <svg viewBox="0 0 120 100" className="w-full h-full fill-none">
-          <path d="M15,60 A 35,35 0 0 1 50,25" stroke="#FF7561" strokeWidth="9" strokeLinecap="round" />
-          <path d="M27,60 A 23,23 0 0 1 50,37" stroke="#FEDA5F" strokeWidth="9" strokeLinecap="round" />
-          <path d="M39,60 A 11,11 0 0 1 50,49" stroke="#A6EDDD" strokeWidth="9" strokeLinecap="round" />
-          <path
-            d="M50,45 C 50,35 60,30 70,30 C 80,30 80,40 80,45 C 80,60 65,75 50,90 L 40,80 L 50,70 Z"
-            fill="currentColor"
-          />
-          <path d="M80,43 L 95,45 L 80,47 Z" fill="currentColor" />
-          <circle cx="63" cy="40" r="4" fill="white" />
-          <text x="85" y="65" fontSize="8" fontWeight="700" fill="currentColor">TM</text>
-        </svg>
-      </div>
+      <img
+        src={logoSrc}
+        alt="SocialHum Logo"
+        className={iconOnly ? "w-full h-full object-contain" : "h-16 w-auto object-contain"}
+        onError={(e) => {
+          console.error('Logo failed to load:', logoSrc);
+          e.currentTarget.style.display = 'none';
+        }}
+      />
     </div>
   );
 };

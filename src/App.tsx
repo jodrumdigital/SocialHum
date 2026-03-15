@@ -48,31 +48,26 @@ const Logo = ({
   variant?: 'default' | 'reverse';
   onClick?: () => void;
 }) => {
-  const logoSrc = variant === 'reverse' ? '/logo_reverse.png' : '/logo.png';
-
-  useEffect(() => {
-    console.log(`Logo component rendered with src: ${logoSrc}`);
-  }, [logoSrc]);
+  // Use a cache buster to ensure we're not seeing a cached 404
+  const timestamp = '20260315'; 
+  const logoSrc = variant === 'reverse' ? `/logo_reverse.png?v=${timestamp}` : `/logo.png?v=${timestamp}`;
 
   return (
     <div
       onClick={onClick}
       className={`flex items-center ${iconOnly ? "" : "gap-1"} ${className} ${onClick ? 'cursor-pointer' : ''}`}
+      style={{ minWidth: iconOnly ? 'auto' : '150px', minHeight: '40px' }}
     >
       <img
         src={logoSrc}
         alt="SocialHum Logo"
         className={iconOnly ? "w-full h-full object-contain" : "h-16 w-auto object-contain"}
+        onLoad={() => console.log(`Successfully loaded: ${logoSrc}`)}
         onError={(e) => {
-          console.error('Logo failed to load from URL:', e.currentTarget.src);
-          // Try a fallback if the absolute path fails
-          if (!e.currentTarget.src.includes('fallback')) {
-             console.log('Attempting relative path fallback...');
-             e.currentTarget.src = logoSrc.startsWith('/') ? logoSrc.substring(1) : logoSrc;
-             // Add a marker to prevent infinite loops
-             if (!e.currentTarget.src.includes('?')) e.currentTarget.src += '?fallback=true';
-          } else {
-             e.currentTarget.style.display = 'none';
+          console.error('CRITICAL: Logo failed to load:', e.currentTarget.src);
+          // If the absolute path fails, try one last ditch effort with a relative path
+          if (!e.currentTarget.src.includes('retry')) {
+            e.currentTarget.src = (variant === 'reverse' ? 'logo_reverse.png' : 'logo.png') + '?retry=true';
           }
         }}
       />
@@ -1041,7 +1036,7 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs font-mono font-bold uppercase tracking-widest text-hum-cream/40">
-          <span>© 2026 SocialHum. All rights reserved. [v1.3]</span>
+          <span>© 2026 SocialHum. All rights reserved. [v1.4]</span>
           <span>Built by Drum Digital</span>
         </div>
       </footer>

@@ -6,8 +6,6 @@
 import React, { useState, useEffect, useRef, Component, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toPng } from 'html-to-image';
-import logo from './assets/logo.png';
-import logoReverse from './assets/logo_reverse.png';
 import { 
   Bird, 
   CheckCircle2, 
@@ -50,7 +48,7 @@ const Logo = ({
   variant?: 'default' | 'reverse';
   onClick?: () => void;
 }) => {
-  const logoSrc = variant === 'reverse' ? logoReverse : logo;
+  const logoSrc = variant === 'reverse' ? '/logo_reverse.png' : '/logo.png';
 
   return (
     <div

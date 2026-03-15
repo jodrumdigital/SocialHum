@@ -49,8 +49,21 @@ const Logo = ({
   onClick?: () => void;
 }) => {
   const [error, setError] = useState(false);
-  // Try relative path first as it's often more reliable on sub-domain deploys
-  const logoSrc = variant === 'reverse' ? 'logo_reverse.png' : 'logo.png';
+  const [attempt, setAttempt] = useState(0);
+  
+  const fileName = variant === 'reverse' ? 'logo_reverse.png' : 'logo.png';
+  const paths = [
+    `/${fileName}`,
+    fileName,
+    `./${fileName}`,
+    `https://socialhum.com.au/${fileName}`
+  ];
+
+  const logoSrc = paths[attempt] || paths[0];
+
+  useEffect(() => {
+    console.log(`[Logo Diagnostic] Attempt ${attempt}: Trying to load ${logoSrc} at ${window.location.href}`);
+  }, [logoSrc, attempt]);
 
   if (error) {
     return (
@@ -72,9 +85,14 @@ const Logo = ({
         src={logoSrc}
         alt="SocialHum Logo"
         className={iconOnly ? "w-10 h-10 object-contain" : "h-16 w-auto object-contain"}
+        onLoad={() => console.log(`[Logo Diagnostic] Successfully loaded: ${logoSrc}`)}
         onError={() => {
-          console.error('Logo failed to load, falling back to text');
-          setError(true);
+          console.error(`[Logo Diagnostic] Failed to load: ${logoSrc}`);
+          if (attempt < paths.length - 1) {
+            setAttempt(prev => prev + 1);
+          } else {
+            setError(true);
+          }
         }}
       />
     </div>
@@ -1042,7 +1060,7 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs font-mono font-bold uppercase tracking-widest text-hum-cream/40">
-          <span>© 2026 SocialHum. All rights reserved. [v1.6]</span>
+          <span>© 2026 SocialHum. All rights reserved. [v1.7]</span>
           <span>Built by Drum Digital</span>
         </div>
       </footer>

@@ -38,39 +38,7 @@ type OnboardingStep = 'package-selection' | 'account-creation' | 'welcome' | 'st
 // --- Components ---
 
 const Logo = ({ className = "", iconOnly = false, variant = 'default', onClick }: { className?: string; iconOnly?: boolean; variant?: 'default' | 'reverse'; onClick?: () => void }) => {
-  const [imgError, setImgError] = useState(false);
-  import logo from '../public/logo.png';
-import logoReverse from '../public/logo_reverse.png';
-
-const logoSrc = variant === 'reverse' ? logoReverse : logo;
-
-  if (imgError) {
-    return (
-      <div onClick={onClick} className={`flex items-center ${iconOnly ? "" : "gap-1"} ${variant === 'reverse' ? 'text-white' : 'text-hum-navy'} ${className} ${onClick ? 'cursor-pointer' : ''}`}>
-        {!iconOnly && <span className="font-black text-4xl tracking-tighter">SocialHum</span>}
-        <div className={`${iconOnly ? "w-full h-full" : "w-16 h-16"} flex items-center justify-center`}>
-          <svg viewBox="0 0 120 100" className="w-full h-full fill-none">
-            {/* Rainbow arcs */}
-            <path d="M15,60 A 35,35 0 0 1 50,25" stroke="#FF7561" strokeWidth="9" strokeLinecap="round" />
-            <path d="M27,60 A 23,23 0 0 1 50,37" stroke="#FEDA5F" strokeWidth="9" strokeLinecap="round" />
-            <path d="M39,60 A 11,11 0 0 1 50,49" stroke="#A6EDDD" strokeWidth="9" strokeLinecap="round" />
-            
-            {/* Bird Body */}
-            <path 
-              d="M50,45 C 50,35 60,30 70,30 C 80,30 80,40 80,45 C 80,60 65,75 50,90 L 40,80 L 50,70 Z" 
-              fill="currentColor" 
-            />
-            {/* Beak */}
-            <path d="M80,43 L 95,45 L 80,47 Z" fill="currentColor" />
-            {/* Eye */}
-            <circle cx="63" cy="40" r="4" fill="white" />
-            {/* TM */}
-            <text x="85" y="65" fontSize="8" fontWeight="black" fill="currentColor" fontFamily="sans-serif">TM</text>
-          </svg>
-        </div>
-      </div>
-    );
-  }
+  const logoSrc = variant === 'reverse' ? '/logo_reverse.png' : '/logo.png';
 
   return (
     <div onClick={onClick} className={`flex items-center ${iconOnly ? "" : "gap-1"} ${className} ${onClick ? 'cursor-pointer' : ''}`}>
@@ -79,7 +47,6 @@ const logoSrc = variant === 'reverse' ? logoReverse : logo;
         alt="SocialHum Logo" 
         className={iconOnly ? "w-full h-full object-contain" : "h-16 w-auto object-contain"}
         referrerPolicy="no-referrer"
-        onError={() => setImgError(true)}
       />
     </div>
   );

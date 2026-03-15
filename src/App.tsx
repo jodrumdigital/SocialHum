@@ -38,13 +38,16 @@ type OnboardingStep = 'package-selection' | 'account-creation' | 'welcome' | 'st
 // --- Components ---
 
 const Logo = ({ className = "", iconOnly = false, variant = 'default', onClick }: { className?: string; iconOnly?: boolean; variant?: 'default' | 'reverse'; onClick?: () => void }) => {
-const logoSrc =
-  variant === 'reverse'
-    ? new URL('./assets/logo_reverse.png', import.meta.url).href
-    : new URL('./assets/logo.png', import.meta.url).href;
+  const logoSrc =
+    variant === 'reverse'
+      ? new URL('./assets/logo_reverse.png', import.meta.url).href
+      : new URL('./assets/logo.png', import.meta.url).href;
 
   return (
-    <div onClick={onClick} className={`flex items-center ${iconOnly ? "" : "gap-1"} ${className} ${onClick ? 'cursor-pointer' : ''}`}>
+    <div 
+      onClick={onClick} 
+      className={`flex items-center ${iconOnly ? "" : "gap-1"} ${className} ${onClick ? 'cursor-pointer' : ''}`}
+    >
       <img 
         src={logoSrc} 
         alt="SocialHum Logo" 

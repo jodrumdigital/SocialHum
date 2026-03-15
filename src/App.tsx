@@ -39,7 +39,10 @@ type OnboardingStep = 'package-selection' | 'account-creation' | 'welcome' | 'st
 
 const Logo = ({ className = "", iconOnly = false, variant = 'default', onClick }: { className?: string; iconOnly?: boolean; variant?: 'default' | 'reverse'; onClick?: () => void }) => {
   const [imgError, setImgError] = useState(false);
-  const logoSrc = variant === 'reverse' ? '/logo_reverse.png' : '/logo.png';
+  import logo from '../public/logo.png';
+import logoReverse from '../public/logo_reverse.png';
+
+const logoSrc = variant === 'reverse' ? logoReverse : logo;
 
   if (imgError) {
     return (

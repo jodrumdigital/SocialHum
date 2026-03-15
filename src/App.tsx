@@ -1029,7 +1029,7 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs font-mono font-bold uppercase tracking-widest text-hum-cream/40">
-          <span>© 2026 SocialHum. All rights reserved.</span>
+          <span>© 2026 SocialHum. All rights reserved. [v1.1]</span>
           <span>Built by Drum Digital</span>
         </div>
       </footer>

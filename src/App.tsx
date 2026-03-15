@@ -373,11 +373,12 @@ const PackageSelection = ({ onSelect, onBack }: { onSelect: (id: string) => void
   );
 };
 
-const AccountCreation = ({ onContinue, onLogin, onBack }: { onContinue: (data: { firstName: string, lastName: string, email: string, companyName: string }) => Promise<void>, onLogin: (email: string) => Promise<void>, onBack: () => void }) => {
+const AccountCreation = ({ onContinue, onLogin, onBack }: { onContinue: (data: { firstName: string, lastName: string, email: string, phone: string, companyName: string }) => Promise<void>, onLogin: (email: string) => Promise<void>, onBack: () => void }) => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
+    phone: '',
     companyName: ''
   });
   const [error, setError] = useState<{ message: string, code?: string } | null>(null);
@@ -385,7 +386,7 @@ const AccountCreation = ({ onContinue, onLogin, onBack }: { onContinue: (data: {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.companyName) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.companyName) {
       setError({ message: 'All fields are required' });
       return;
     }
@@ -470,6 +471,16 @@ const AccountCreation = ({ onContinue, onLogin, onBack }: { onContinue: (data: {
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             className="w-full bg-white border-2 border-hum-navy p-4 rounded-2xl font-bold text-hum-navy focus:outline-none focus:ring-2 focus:ring-hum-teal/20"
             placeholder="jo@example.com"
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] font-black uppercase tracking-widest text-hum-navy/40 mb-2 ml-4">Phone Number</label>
+          <input 
+            type="tel"
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+            className="w-full bg-white border-2 border-hum-navy p-4 rounded-2xl font-bold text-hum-navy focus:outline-none focus:ring-2 focus:ring-hum-teal/20"
+            placeholder="0400 000 000"
           />
         </div>
         <div>
@@ -1045,7 +1056,7 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs font-mono font-bold uppercase tracking-widest text-hum-cream/40">
-          <span>© 2026 SocialHum. All rights reserved. [v2.0]</span>
+          <span>© 2026 SocialHum. All rights reserved.</span>
           <span>Built by Drum Digital</span>
         </div>
       </footer>
@@ -1133,13 +1144,8 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
       title: 'Business Identity',
       q: "Let's start with the basics. Who are we building for?", 
       fields: [
-        { id: 'firstName', label: 'First Name', type: 'text', placeholder: 'e.g. John (Your name helps us personalize the strategy)' },
-        { id: 'lastName', label: 'Last Name', type: 'text', placeholder: 'e.g. Doe' },
-        { id: 'phone', label: 'Phone Number', type: 'text', placeholder: 'e.g. 0400 000 000 (We only call if there\'s an urgent strategy update)' },
-        { id: 'businessName', label: 'Business Name', type: 'text', placeholder: 'e.g. Hum Social (The full legal or trading name of your brand)' },
         { id: 'websiteUrl', label: 'Website URL', type: 'text', placeholder: 'e.g. https://www.humsocial.com.au (We\'ll analyze this for brand voice)' },
-        { id: 'location', label: 'Geographic market/location', type: 'text', placeholder: 'e.g. Sydney Metro, National Australia, or Global (Be specific about your primary service area)' },
-        { id: 'approvalEmail', label: 'E-Mail for approval', type: 'email', placeholder: 'e.g. marketing@yourbrand.com (Where should we send the final strategy?)' }
+        { id: 'location', label: 'Geographic market/location', type: 'text', placeholder: 'e.g. Sydney Metro, National Australia, or Global (Be specific about your primary service area)' }
       ]
     },
     { 
@@ -2170,7 +2176,7 @@ export default function App() {
     setUser(mockUser);
   };
 
-  const signUp = async (data: { firstName: string, lastName: string, email: string, companyName: string }) => {
+  const signUp = async (data: { firstName: string, lastName: string, email: string, phone: string, companyName: string }) => {
     try {
       // Mock user creation
       const mockUser = {
@@ -2190,11 +2196,27 @@ export default function App() {
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
+            phone: data.phone,
             businessName: data.companyName,
           }),
         });
       } catch (hsError) {
         console.error("HubSpot sync failed:", hsError);
+      }
+
+      // Sync with n8n
+      try {
+        await fetch('https://atd-test.app.n8n.cloud/webhook/f47de6fe-9fa9-4045-a07d-7379aa98eab8', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            event: 'account_created',
+            ...data,
+            timestamp: new Date().toISOString()
+          }),
+        });
+      } catch (n8nError) {
+        console.error("n8n sync failed:", n8nError);
       }
 
       setPendingUserData(data);
@@ -2234,6 +2256,26 @@ export default function App() {
 
   const completeQuestionnaire = async (data: any) => {
     setStrategyData(data);
+    
+    // Sync with n8n
+    try {
+      await fetch('https://atd-test.app.n8n.cloud/webhook/f47de6fe-9fa9-4045-a07d-7379aa98eab8', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          event: 'strategy_completed',
+          user: {
+            email: user?.email,
+            displayName: user?.displayName,
+            ...pendingUserData
+          },
+          strategyData: data,
+          timestamp: new Date().toISOString()
+        }),
+      });
+    } catch (n8nError) {
+      console.error("n8n strategy sync failed:", n8nError);
+    }
     
     if (user) {
       try {

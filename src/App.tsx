@@ -50,28 +50,55 @@ const Logo = ({
 }) => {
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [status, setStatus] = useState<string>('pending');
   
   const fileName = variant === 'reverse' ? 'logo_reverse.png' : 'logo.png';
   const paths = [
     `/${fileName}`,
     fileName,
     `./${fileName}`,
-    `https://socialhum.com.au/${fileName}`
+    `https://www.socialhum.com.au/${fileName}`
   ];
 
   const logoSrc = paths[attempt] || paths[0];
 
   useEffect(() => {
-    console.log(`[Logo Diagnostic] Attempt ${attempt}: Trying to load ${logoSrc} at ${window.location.href}`);
+    const checkLogo = async () => {
+      try {
+        const response = await fetch(logoSrc, { method: 'HEAD' });
+        console.log(`[Logo Debug] ${logoSrc} status: ${response.status} ${response.statusText}`);
+        setStatus(`${response.status}`);
+        if (!response.ok && attempt < paths.length - 1) {
+          setAttempt(prev => prev + 1);
+        } else if (!response.ok) {
+          setError(true);
+        }
+      } catch (err) {
+        console.error(`[Logo Debug] Error fetching ${logoSrc}:`, err);
+        if (attempt < paths.length - 1) {
+          setAttempt(prev => prev + 1);
+        } else {
+          setError(true);
+        }
+      }
+    };
+    checkLogo();
   }, [logoSrc, attempt]);
 
   if (error) {
     return (
       <div 
         onClick={onClick}
-        className={`flex items-center font-bold text-2xl tracking-tight ${variant === 'reverse' ? 'text-white' : 'text-hum-charcoal'} ${className} ${onClick ? 'cursor-pointer' : ''}`}
+        className={`flex items-center gap-2 ${className} ${onClick ? 'cursor-pointer' : ''}`}
       >
-        SocialHum
+        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl ${variant === 'reverse' ? 'bg-white text-hum-charcoal' : 'bg-hum-charcoal text-white'}`}>
+          S
+        </div>
+        {!iconOnly && (
+          <span className={`font-bold text-2xl tracking-tight ${variant === 'reverse' ? 'text-white' : 'text-hum-charcoal'}`}>
+            SocialHum
+          </span>
+        )}
       </div>
     );
   }
@@ -85,9 +112,9 @@ const Logo = ({
         src={logoSrc}
         alt="SocialHum Logo"
         className={iconOnly ? "w-10 h-10 object-contain" : "h-16 w-auto object-contain"}
-        onLoad={() => console.log(`[Logo Diagnostic] Successfully loaded: ${logoSrc}`)}
+        onLoad={() => console.log(`[Logo Debug] Image element loaded: ${logoSrc}`)}
         onError={() => {
-          console.error(`[Logo Diagnostic] Failed to load: ${logoSrc}`);
+          console.error(`[Logo Debug] Image element failed: ${logoSrc}`);
           if (attempt < paths.length - 1) {
             setAttempt(prev => prev + 1);
           } else {
@@ -1060,7 +1087,7 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs font-mono font-bold uppercase tracking-widest text-hum-cream/40">
-          <span>© 2026 SocialHum. All rights reserved. [v1.7]</span>
+          <span>© 2026 SocialHum. All rights reserved. [v1.8]</span>
           <span>Built by Drum Digital</span>
         </div>
       </footer>

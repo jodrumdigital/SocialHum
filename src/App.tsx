@@ -48,36 +48,33 @@ const Logo = ({
   variant?: 'default' | 'reverse';
   onClick?: () => void;
 }) => {
-  const timestamp = 'v1.5'; 
-  const logoSrc = variant === 'reverse' ? `/logo_reverse.png?v=${timestamp}` : `/logo.png?v=${timestamp}`;
+  const [error, setError] = useState(false);
+  // Try relative path first as it's often more reliable on sub-domain deploys
+  const logoSrc = variant === 'reverse' ? 'logo_reverse.png' : 'logo.png';
+
+  if (error) {
+    return (
+      <div 
+        onClick={onClick}
+        className={`flex items-center font-bold text-2xl tracking-tight ${variant === 'reverse' ? 'text-white' : 'text-hum-charcoal'} ${className} ${onClick ? 'cursor-pointer' : ''}`}
+      >
+        SocialHum
+      </div>
+    );
+  }
 
   return (
     <div
       onClick={onClick}
       className={`flex items-center ${className} ${onClick ? 'cursor-pointer' : ''}`}
-      style={{ 
-        width: iconOnly ? '40px' : '200px', 
-        height: '64px',
-        position: 'relative'
-      }}
     >
       <img
         src={logoSrc}
         alt="SocialHum Logo"
-        className="w-full h-full object-contain"
-        style={{ display: 'block' }}
-        onError={(e) => {
-          console.error('Logo failed to load:', logoSrc);
-          // If the image fails, we'll try to show a text fallback so the site isn't broken
-          e.currentTarget.style.opacity = '0';
-          const parent = e.currentTarget.parentElement;
-          if (parent && !parent.querySelector('.logo-fallback')) {
-            const fallback = document.createElement('span');
-            fallback.className = 'logo-fallback font-bold text-xl tracking-tight text-hum-charcoal';
-            fallback.innerText = 'SocialHum';
-            if (variant === 'reverse') fallback.classList.add('text-white');
-            parent.appendChild(fallback);
-          }
+        className={iconOnly ? "w-10 h-10 object-contain" : "h-16 w-auto object-contain"}
+        onError={() => {
+          console.error('Logo failed to load, falling back to text');
+          setError(true);
         }}
       />
     </div>
@@ -1045,7 +1042,7 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
           </div>
         </div>
         <div className="max-w-7xl mx-auto mt-20 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between gap-4 text-xs font-mono font-bold uppercase tracking-widest text-hum-cream/40">
-          <span>© 2026 SocialHum. All rights reserved. [v1.5]</span>
+          <span>© 2026 SocialHum. All rights reserved. [v1.6]</span>
           <span>Built by Drum Digital</span>
         </div>
       </footer>

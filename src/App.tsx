@@ -48,26 +48,9 @@ const Logo = ({
   variant?: 'default' | 'reverse';
   onClick?: () => void;
 }) => {
-  const [error, setError] = useState(false);
-  const logoSrc = variant === 'reverse' ? '/logo_reverse.png' : '/logo.png';
-
-  if (error) {
-    return (
-      <div 
-        onClick={onClick}
-        className={`flex items-center gap-2 ${className} ${onClick ? 'cursor-pointer' : ''}`}
-      >
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-xl shadow-sm ${variant === 'reverse' ? 'bg-white text-hum-charcoal' : 'bg-hum-charcoal text-white'}`}>
-          S
-        </div>
-        {!iconOnly && (
-          <span className={`font-bold text-2xl tracking-tight ${variant === 'reverse' ? 'text-white' : 'text-hum-charcoal'}`}>
-            SocialHum
-          </span>
-        )}
-      </div>
-    );
-  }
+  const logoSrc = variant === 'reverse'
+    ? '/socialhum-logo-reverse-v2.png'
+    : '/socialhum-logo-v2.png';
 
   return (
     <div
@@ -78,7 +61,6 @@ const Logo = ({
         src={logoSrc}
         alt="SocialHum Logo"
         className={iconOnly ? "w-10 h-10 object-contain" : "h-16 w-auto object-contain"}
-        onError={() => setError(true)}
       />
     </div>
   );

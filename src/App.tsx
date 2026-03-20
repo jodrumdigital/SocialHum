@@ -1136,7 +1136,7 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       fields: [
         { id: 'primaryGoals', label: 'Primary business goals', type: 'textarea', placeholder: 'e.g. "Increase monthly qualified leads by 20% within 6 months" or "Establish thought leadership in the FinTech space by publishing 2 deep-dives per week."', required: true },
         { id: 'currentPriority', label: 'What objective is your priority right now?', type: 'textarea', placeholder: 'e.g. "We are launching a new product in October and need to build a waitlist of 500 people." or "Improving customer retention through educational content."', required: true },
-        { id: 'personalGoals', label: 'Any personal goals?', type: 'textarea', placeholder: 'e.g. "I want to spend 50% less time on manual social media posting" or "I want to be recognized as a top 10 influencer in my niche."' }
+        { id: 'personalGoals', label: 'Any personal goals?', type: 'textarea', placeholder: 'e.g. "I want to spend 50% less time on manual social media posting" or "I want to be recognized as a top 10 influencer in my niche."', required: true }
       ]
     },
     { 
@@ -1146,7 +1146,7 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       fields: [
         { id: 'productsServices', label: 'What products/services do you offer?', type: 'textarea', placeholder: 'e.g. "B2B SaaS platform for inventory management, including mobile app and desktop dashboard." List your top 3 revenue drivers.', required: true },
         { id: 'differentiators', label: 'What makes you different?', type: 'textarea', placeholder: 'e.g. "Unlike competitors, we offer 24/7 human support and our interface is designed for non-technical users." What is your "Unfair Advantage"?', required: true },
-        { id: 'seasonality', label: 'What seasonality impacts your business?', type: 'textarea', placeholder: 'e.g. "70% of our sales happen between Nov-Jan due to Christmas gifting." or "We see a dip in July during school holidays."' }
+        { id: 'seasonality', label: 'What seasonality impacts your business?', type: 'textarea', placeholder: 'e.g. "70% of our sales happen between Nov-Jan due to Christmas gifting." or "We see a dip in July during school holidays."', required: true }
       ]
     },
     { 
@@ -1166,7 +1166,7 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       q: "How does the business flow?", 
       fields: [
         { id: 'acv', label: 'Average customer value (ACV)', type: 'text', placeholder: 'e.g. $5,000 initial setup + $500/month recurring', required: true },
-        { id: 'salesType', label: 'Sales Type', type: 'select', options: ['One-off', 'Recurring'] }
+        { id: 'salesType', label: 'Sales Type', type: 'select', options: ['One-off', 'Recurring'], required: true }
       ]
     },
     { 
@@ -1174,11 +1174,11 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       title: 'Competitors',
       q: "Who else is in the space?", 
       fields: [
-        { id: 'competitor1', label: 'Competitor Website URL 1', type: 'text', placeholder: 'https://www.competitor-a.com (Who do you lose deals to most often?)' },
-        { id: 'competitor2', label: 'Competitor Website URL 2', type: 'text', placeholder: 'https://www.competitor-b.com' },
-        { id: 'competitor3', label: 'Competitor Website URL 3', type: 'text', placeholder: 'https://www.competitor-c.com' },
-        { id: 'competitor4', label: 'Competitor Website URL 4', type: 'text', placeholder: 'https://www.competitor-d.com' },
-        { id: 'competitor5', label: 'Competitor Website URL 5', type: 'text', placeholder: 'https://www.competitor-e.com' }
+        { id: 'competitor1', label: 'Competitor Website URL 1', type: 'text', placeholder: 'https://www.competitor-a.com (Who do you lose deals to most often?)', required: true },
+        { id: 'competitor2', label: 'Competitor Website URL 2', type: 'text', placeholder: 'https://www.competitor-b.com', required: true },
+        { id: 'competitor3', label: 'Competitor Website URL 3', type: 'text', placeholder: 'https://www.competitor-c.com', required: true },
+        { id: 'competitor4', label: 'Competitor Website URL 4', type: 'text', placeholder: 'https://www.competitor-d.com', required: true },
+        { id: 'competitor5', label: 'Competitor Website URL 5', type: 'text', placeholder: 'https://www.competitor-e.com', required: true }
       ]
     },
     { 
@@ -1186,11 +1186,11 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       title: 'Marketing History',
       q: "What's the current state of play?", 
       fields: [
-        { id: 'marketingActivities', label: 'Current marketing activities', type: 'textarea', placeholder: 'e.g. "Posting 3x week on LinkedIn, running $500/mo Google Ads, monthly email newsletter to 1,000 subs."' },
-        { id: 'whatWorks', label: 'What works and what hasn\'t worked?', type: 'textarea', placeholder: 'e.g. "LinkedIn outreach works well, but Facebook Ads had a very high CPL and low quality."' },
-        { id: 'websiteTraffic', label: 'Monthly website traffic', type: 'text', placeholder: 'e.g. 2,500 unique visitors per month (Check your Google Analytics)' },
-        { id: 'monthlyLeads', label: 'Monthly leads', type: 'text', placeholder: 'e.g. 45 inbound inquiries per month' },
-        { id: 'newCustomers', label: 'Monthly new customers', type: 'text', placeholder: 'e.g. 12 new signed contracts per month' }
+        { id: 'marketingActivities', label: 'Current marketing activities', type: 'textarea', placeholder: 'e.g. "Posting 3x week on LinkedIn, running $500/mo Google Ads, monthly email newsletter to 1,000 subs."', required: true },
+        { id: 'whatWorks', label: 'What works and what hasn\'t worked?', type: 'textarea', placeholder: 'e.g. "LinkedIn outreach works well, but Facebook Ads had a very high CPL and low quality."', required: true },
+        { id: 'websiteTraffic', label: 'Monthly website traffic', type: 'text', placeholder: 'e.g. 2,500 unique visitors per month (Check your Google Analytics)', required: true },
+        { id: 'monthlyLeads', label: 'Monthly leads', type: 'text', placeholder: 'e.g. 45 inbound inquiries per month', required: true },
+        { id: 'newCustomers', label: 'Monthly new customers', type: 'text', placeholder: 'e.g. 12 new signed contracts per month', required: true }
       ]
     },
     { 
@@ -1199,10 +1199,10 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       q: "Let's polish the look and feel.", 
       fields: [
         { id: 'brandColors', label: 'Brand colors', type: 'textarea', placeholder: 'e.g. Primary: #006777 (Teal), Secondary: #FEDA5F (Yellow). Provide HEX codes if possible.', required: true },
-        { id: 'brandFonts', label: 'Brand fonts', type: 'text', placeholder: 'e.g. Montserrat for Headings, Open Sans for Body text.' },
+        { id: 'brandFonts', label: 'Brand fonts', type: 'text', placeholder: 'e.g. Montserrat for Headings, Open Sans for Body text.', required: true },
         { id: 'toneGuidelines', label: 'Brand tone and voice guidelines', type: 'textarea', placeholder: 'e.g. "Professional yet approachable, witty but not sarcastic, authoritative but helpful." Use 3-5 adjectives.', required: true },
-        { id: 'styleGuide', label: 'Upload your brand style guide', type: 'file', placeholder: 'Choose File (PDF or Image)' },
-        { id: 'logoFiles', label: 'Upload logo files', type: 'file', placeholder: 'Choose File (PNG, SVG, or JPG)' }
+        { id: 'styleGuide', label: 'Upload your brand style guide', type: 'file', placeholder: 'Choose File (PDF or Image)', required: true },
+        { id: 'logoFiles', label: 'Upload logo files', type: 'file', placeholder: 'Choose File (PNG, SVG, or JPG)', required: true }
       ]
     },
     { 
@@ -1210,11 +1210,11 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       title: 'Social Channels',
       q: "Where do you hang out?", 
       fields: [
-        { id: 'linkedinUrl', label: 'LinkedIn (URL)', type: 'text', placeholder: 'https://linkedin.com/company/your-brand' },
-        { id: 'instagramUrl', label: 'Instagram (URL)', type: 'text', placeholder: 'https://instagram.com/your-brand' },
-        { id: 'facebookUrl', label: 'Facebook (URL)', type: 'text', placeholder: 'https://facebook.com/your-brand' },
-        { id: 'twitterUrl', label: 'Twitter/X (URL)', type: 'text', placeholder: 'https://twitter.com/your-brand' },
-        { id: 'tiktokUrl', label: 'TikTok (URL)', type: 'text', placeholder: 'https://tiktok.com/your-brand' }
+        { id: 'linkedinUrl', label: 'LinkedIn (URL)', type: 'text', placeholder: 'https://linkedin.com/company/your-brand', required: true },
+        { id: 'instagramUrl', label: 'Instagram (URL)', type: 'text', placeholder: 'https://instagram.com/your-brand', required: true },
+        { id: 'facebookUrl', label: 'Facebook (URL)', type: 'text', placeholder: 'https://facebook.com/your-brand', required: true },
+        { id: 'twitterUrl', label: 'Twitter/X (URL)', type: 'text', placeholder: 'https://twitter.com/your-brand', required: true },
+        { id: 'tiktokUrl', label: 'TikTok (URL)', type: 'text', placeholder: 'https://tiktok.com/your-brand', required: true }
       ]
     }
   ];
@@ -1322,7 +1322,11 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       <div className="space-y-6 mb-10">
         {steps[step].fields.map((field) => (
           <div key={field.id} className="space-y-3">
-            {field.label && <label className="text-[10px] font-black uppercase tracking-widest text-hum-navy/40 ml-2">{field.label}</label>}
+            {field.label && (
+              <label className="text-[10px] font-black uppercase tracking-widest text-hum-navy/40 ml-2">
+                {field.label} {field.required && <span className="text-hum-coral">*</span>}
+              </label>
+            )}
             
             {field.type === 'text' && (
               <input 

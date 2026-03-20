@@ -1240,7 +1240,8 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
           email: data.email,
           phone: data.phone,
           businessName: data.businessName,
-          websiteUrl: data.websiteUrl
+          websiteUrl: data.websiteUrl,
+          location: data.location
         })
       });
     } catch (error) {
@@ -2307,6 +2308,22 @@ export default function App() {
       });
     } catch (n8nError) {
       console.error("n8n strategy sync failed:", n8nError);
+    }
+
+    // Sync with HubSpot Strategy Completion (triggers notification)
+    try {
+      await fetch('/api/hubspot/strategy-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: pendingUserData?.firstName || user?.displayName?.split(' ')[0] || 'User',
+          lastName: pendingUserData?.lastName || user?.displayName?.split(' ')[1] || '',
+          email: user?.email || pendingUserData?.email,
+          strategyData: data
+        }),
+      });
+    } catch (hsError) {
+      console.error("HubSpot strategy sync failed:", hsError);
     }
     
     if (user) {

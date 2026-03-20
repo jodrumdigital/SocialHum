@@ -648,8 +648,8 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
             For Expertise-Led Businesses
           </div>
           <h1 className="text-6xl md:text-8xl font-black leading-[0.85] mb-10 tracking-tighter uppercase text-hum-navy">
-            Social Media <br />
-            Strategy. <br />
+            <span className="text-hum-purple">Social Media</span> <br />
+            <span className="text-hum-coral">Strategy.</span> <br />
             <span className="text-hum-teal italic lowercase font-medium tracking-normal">Automated.</span>
           </h1>
           <div className="flex gap-4 mb-10">
@@ -1047,14 +1047,15 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
 
 // --- App Flow ---
 
-const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void, onBack: () => void }) => {
+const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data: any) => void, onBack: () => void, initialData?: any }) => {
   const [step, setStep] = useState(0);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    businessName: '',
+    firstName: initialData?.firstName || '',
+    lastName: initialData?.lastName || '',
+    email: initialData?.email || '',
+    phone: initialData?.phone || '',
+    businessName: initialData?.companyName || '',
     primaryGoals: '',
     currentPriority: '',
     personalGoals: '',
@@ -1081,7 +1082,6 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
     newCustomers: '',
     brandColors: '',
     brandFonts: '',
-    approvalEmail: '',
     linkedinUrl: '',
     instagramUrl: '',
     facebookUrl: '',
@@ -1125,8 +1125,8 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
       title: 'Business Identity',
       q: "Let's start with the basics. Who are we building for?", 
       fields: [
-        { id: 'websiteUrl', label: 'Website URL', type: 'text', placeholder: 'e.g. https://www.humsocial.com.au (We\'ll analyze this for brand voice)' },
-        { id: 'location', label: 'Geographic market/location', type: 'text', placeholder: 'e.g. Sydney Metro, National Australia, or Global (Be specific about your primary service area)' }
+        { id: 'websiteUrl', label: 'Website URL', type: 'text', placeholder: 'e.g. https://www.humsocial.com.au (We\'ll analyze this for brand voice)', required: true },
+        { id: 'location', label: 'Geographic market/location', type: 'text', placeholder: 'e.g. Sydney Metro, National Australia, or Global (Be specific about your primary service area)', required: true }
       ]
     },
     { 
@@ -1134,8 +1134,8 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
       title: 'Strategy & Goals',
       q: "What are we aiming for?", 
       fields: [
-        { id: 'primaryGoals', label: 'Primary business goals', type: 'textarea', placeholder: 'e.g. "Increase monthly qualified leads by 20% within 6 months" or "Establish thought leadership in the FinTech space by publishing 2 deep-dives per week."' },
-        { id: 'currentPriority', label: 'What objective is your priority right now?', type: 'textarea', placeholder: 'e.g. "We are launching a new product in October and need to build a waitlist of 500 people." or "Improving customer retention through educational content."' },
+        { id: 'primaryGoals', label: 'Primary business goals', type: 'textarea', placeholder: 'e.g. "Increase monthly qualified leads by 20% within 6 months" or "Establish thought leadership in the FinTech space by publishing 2 deep-dives per week."', required: true },
+        { id: 'currentPriority', label: 'What objective is your priority right now?', type: 'textarea', placeholder: 'e.g. "We are launching a new product in October and need to build a waitlist of 500 people." or "Improving customer retention through educational content."', required: true },
         { id: 'personalGoals', label: 'Any personal goals?', type: 'textarea', placeholder: 'e.g. "I want to spend 50% less time on manual social media posting" or "I want to be recognized as a top 10 influencer in my niche."' }
       ]
     },
@@ -1144,8 +1144,8 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
       title: 'Offerings & Edge',
       q: "What do you bring to the table?", 
       fields: [
-        { id: 'productsServices', label: 'What products/services do you offer?', type: 'textarea', placeholder: 'e.g. "B2B SaaS platform for inventory management, including mobile app and desktop dashboard." List your top 3 revenue drivers.' },
-        { id: 'differentiators', label: 'What makes you different?', type: 'textarea', placeholder: 'e.g. "Unlike competitors, we offer 24/7 human support and our interface is designed for non-technical users." What is your "Unfair Advantage"?' },
+        { id: 'productsServices', label: 'What products/services do you offer?', type: 'textarea', placeholder: 'e.g. "B2B SaaS platform for inventory management, including mobile app and desktop dashboard." List your top 3 revenue drivers.', required: true },
+        { id: 'differentiators', label: 'What makes you different?', type: 'textarea', placeholder: 'e.g. "Unlike competitors, we offer 24/7 human support and our interface is designed for non-technical users." What is your "Unfair Advantage"?', required: true },
         { id: 'seasonality', label: 'What seasonality impacts your business?', type: 'textarea', placeholder: 'e.g. "70% of our sales happen between Nov-Jan due to Christmas gifting." or "We see a dip in July during school holidays."' }
       ]
     },
@@ -1154,10 +1154,10 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
       title: 'Target Audience',
       q: "Who are we talking to?", 
       fields: [
-        { id: 'targetAudience', label: 'Who is your target audience?', type: 'textarea', placeholder: 'e.g. "Female entrepreneurs aged 30-45, based in Australia, earning $100k+, who value sustainability and work-life balance."' },
-        { id: 'audiencePriority', label: 'What target audience is your priority right now?', type: 'textarea', placeholder: 'e.g. "Specifically focusing on HR Managers in mid-sized tech companies (50-200 employees) looking for wellness programs."' },
-        { id: 'keyTriggers', label: 'Key triggers for your customers?', type: 'textarea', placeholder: 'e.g. "They just received a round of funding," "They are failing an audit," or "They are frustrated with their current slow manual process."' },
-        { id: 'problemsSolved', label: 'What problems do you solve?', type: 'textarea', placeholder: 'e.g. "We eliminate 10 hours of manual data entry per week" or "We provide peace of mind that their tax compliance is 100% accurate."' }
+        { id: 'targetAudience', label: 'Who is your target audience?', type: 'textarea', placeholder: 'e.g. "Female entrepreneurs aged 30-45, based in Australia, earning $100k+, who value sustainability and work-life balance."', required: true },
+        { id: 'audiencePriority', label: 'What target audience is your priority right now?', type: 'textarea', placeholder: 'e.g. "Specifically focusing on HR Managers in mid-sized tech companies (50-200 employees) looking for wellness programs."', required: true },
+        { id: 'keyTriggers', label: 'Key triggers for your customers?', type: 'textarea', placeholder: 'e.g. "They just received a round of funding," "They are failing an audit," or "They are frustrated with their current slow manual process."', required: true },
+        { id: 'problemsSolved', label: 'What problems do you solve?', type: 'textarea', placeholder: 'e.g. "We eliminate 10 hours of manual data entry per week" or "We provide peace of mind that their tax compliance is 100% accurate."', required: true }
       ]
     },
     { 
@@ -1165,7 +1165,7 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
       title: 'Business Economics',
       q: "How does the business flow?", 
       fields: [
-        { id: 'acv', label: 'Average customer value (ACV)', type: 'text', placeholder: 'e.g. $5,000 initial setup + $500/month recurring' },
+        { id: 'acv', label: 'Average customer value (ACV)', type: 'text', placeholder: 'e.g. $5,000 initial setup + $500/month recurring', required: true },
         { id: 'salesType', label: 'Sales Type', type: 'select', options: ['One-off', 'Recurring'] }
       ]
     },
@@ -1198,9 +1198,9 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
       title: 'Brand & Social',
       q: "Let's polish the look and feel.", 
       fields: [
-        { id: 'brandColors', label: 'Brand colors', type: 'textarea', placeholder: 'e.g. Primary: #006777 (Teal), Secondary: #FEDA5F (Yellow). Provide HEX codes if possible.' },
+        { id: 'brandColors', label: 'Brand colors', type: 'textarea', placeholder: 'e.g. Primary: #006777 (Teal), Secondary: #FEDA5F (Yellow). Provide HEX codes if possible.', required: true },
         { id: 'brandFonts', label: 'Brand fonts', type: 'text', placeholder: 'e.g. Montserrat for Headings, Open Sans for Body text.' },
-        { id: 'toneGuidelines', label: 'Brand tone and voice guidelines', type: 'textarea', placeholder: 'e.g. "Professional yet approachable, witty but not sarcastic, authoritative but helpful." Use 3-5 adjectives.' },
+        { id: 'toneGuidelines', label: 'Brand tone and voice guidelines', type: 'textarea', placeholder: 'e.g. "Professional yet approachable, witty but not sarcastic, authoritative but helpful." Use 3-5 adjectives.', required: true },
         { id: 'styleGuide', label: 'Upload your brand style guide', type: 'file', placeholder: 'Choose File (PDF or Image)' },
         { id: 'logoFiles', label: 'Upload logo files', type: 'file', placeholder: 'Choose File (PNG, SVG, or JPG)' }
       ]
@@ -1227,7 +1227,7 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
         body: JSON.stringify({
           firstName: data.firstName,
           lastName: data.lastName,
-          email: data.approvalEmail,
+          email: data.email,
           phone: data.phone,
           businessName: data.businessName,
           websiteUrl: data.websiteUrl
@@ -1238,7 +1238,19 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
     }
   };
 
+  const [error, setError] = useState<string | null>(null);
+
   const next = () => {
+    // Validate required fields
+    const currentStepFields = steps[step].fields;
+    const missingFields = currentStepFields.filter(f => f.required && !(formData as any)[f.id]);
+    
+    if (missingFields.length > 0) {
+      setError(`Please fill in all required fields: ${missingFields.map(f => f.label).join(', ')}`);
+      return;
+    }
+    
+    setError(null);
     if (step === 0) {
       syncToHubSpot(formData);
     }
@@ -1300,6 +1312,11 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
         <h2 className="text-4xl font-black uppercase tracking-tighter mb-4 text-hum-navy leading-none">
           {steps[step].q}
         </h2>
+        {error && (
+          <div className="bg-hum-coral/10 border-2 border-hum-coral p-4 rounded-2xl text-hum-coral font-bold text-sm mb-4">
+            {error}
+          </div>
+        )}
       </div>
 
       <div className="space-y-6 mb-10">
@@ -1333,9 +1350,16 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
                   type="file"
                   className="hidden"
                   id={field.id}
+                  accept={field.id === 'logoFiles' ? '.png,.svg,.jpg,.jpeg' : '*'}
                   onChange={e => {
                     const file = e.target.files?.[0];
-                    if (file) setFormData({...formData, [field.id]: file.name});
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setFormData({...formData, [field.id]: reader.result as string});
+                      };
+                      reader.readAsDataURL(file);
+                    }
                   }}
                 />
                 <label 
@@ -1344,7 +1368,13 @@ const Questionnaire = ({ onComplete, onBack }: { onComplete: (data: any) => void
                 >
                   <div className="text-center">
                     <Upload className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                    <span>{(formData as any)[field.id] || field.placeholder || 'Upload File'}</span>
+                    <span>
+                      {(formData as any)[field.id] 
+                        ? (typeof (formData as any)[field.id] === 'string' && (formData as any)[field.id].startsWith('data:') 
+                            ? 'File selected' 
+                            : (formData as any)[field.id])
+                        : field.placeholder || 'Upload File'}
+                    </span>
                   </div>
                 </label>
               </div>
@@ -2374,7 +2404,11 @@ export default function App() {
               <StrategyIntro onBegin={handleBeginStrategy} onBack={() => setView('landing')} />
             )}
             {onboardingStep === 'strategy-builder' && (
-              <Questionnaire onComplete={completeQuestionnaire} onBack={() => setView('landing')} />
+              <Questionnaire 
+                onComplete={completeQuestionnaire} 
+                onBack={() => setView('landing')} 
+                initialData={pendingUserData}
+              />
             )}
           </motion.div>
         )}

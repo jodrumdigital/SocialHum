@@ -185,41 +185,49 @@ const OnboardingLayout = ({
     <div className="min-h-screen bg-hum-cream flex flex-col">
       {/* Progress Bar */}
       {currentStep !== 'package-selection' && (
-        <div className="w-full bg-white border-b-2 border-hum-navy px-6 py-4">
-          <div className="max-w-4xl mx-auto flex items-center justify-between relative">
-            {onBackToHome && (
-              <button 
-                onClick={onBackToHome}
-                className="absolute -left-32 top-1/2 -translate-y-1/2 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-hum-navy/40 hover:text-hum-navy transition-colors group"
-              >
-                <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
-                Back to Home
-              </button>
-            )}
-            {/* Progress Line */}
-            <div className="absolute top-1/2 left-0 w-full h-0.5 bg-hum-navy/10 -translate-y-1/2 z-0" />
-            <div 
-              className="absolute top-1/2 left-0 h-0.5 bg-hum-teal -translate-y-1/2 z-0 transition-all duration-500" 
-              style={{ width: `${(Math.max(0, currentIndex) / (steps.length - 1)) * 100}%` }}
-            />
+        <div className="w-full bg-white border-b-2 border-hum-navy px-6 py-4 sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto flex items-center justify-between relative">
+            <div className="flex items-center gap-6">
+              <Logo iconOnly onClick={onBackToHome} className="cursor-pointer" />
+              {onBackToHome && (
+                <button 
+                  onClick={onBackToHome}
+                  className="hidden md:flex items-center gap-2 text-xs font-black uppercase tracking-widest text-hum-navy/40 hover:text-hum-navy transition-colors group"
+                >
+                  <ArrowRight className="w-4 h-4 rotate-180 group-hover:-translate-x-1 transition-transform" />
+                  Back to Home
+                </button>
+              )}
+            </div>
             
-            {steps.map((step, i) => {
-              const isActive = i <= currentIndex;
-              const isCurrent = i === currentIndex;
+            <div className="flex-grow max-w-2xl mx-auto flex items-center justify-between relative px-12">
+              {/* Progress Line */}
+              <div className="absolute top-1/2 left-12 right-12 h-0.5 bg-hum-navy/10 -translate-y-1/2 z-0" />
+              <div 
+                className="absolute top-1/2 left-12 h-0.5 bg-hum-teal -translate-y-1/2 z-0 transition-all duration-500" 
+                style={{ width: `calc(${(Math.max(0, currentIndex) / (steps.length - 1)) * 100}% - 0px)` }}
+              />
               
-              return (
-                <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
-                  <div className={`w-8 h-8 rounded-full border-2 border-hum-navy flex items-center justify-center font-black text-xs transition-all duration-300 ${
-                    isActive ? 'bg-hum-teal text-white' : 'bg-white text-hum-navy'
-                  } ${isCurrent ? 'scale-125 shadow-[4px_4px_0px_0px_rgba(22,55,71,1)]' : ''}`}>
-                    {isActive && i < currentIndex ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
+              {steps.map((step, i) => {
+                const isActive = i <= currentIndex;
+                const isCurrent = i === currentIndex;
+                
+                return (
+                  <div key={step.id} className="relative z-10 flex flex-col items-center gap-2">
+                    <div className={`w-8 h-8 rounded-full border-2 border-hum-navy flex items-center justify-center font-black text-xs transition-all duration-300 ${
+                      isActive ? 'bg-hum-teal text-white' : 'bg-white text-hum-navy'
+                    } ${isCurrent ? 'scale-125 shadow-[4px_4px_0px_0px_rgba(22,55,71,1)]' : ''}`}>
+                      {isActive && i < currentIndex ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
+                    </div>
+                    <span className={`hidden sm:block text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-hum-navy' : 'text-hum-navy/40'}`}>
+                      {step.label}
+                    </span>
                   </div>
-                  <span className={`text-[10px] font-black uppercase tracking-widest ${isActive ? 'text-hum-navy' : 'text-hum-navy/40'}`}>
-                    {step.label}
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+
+            <div className="w-32 hidden md:block" /> {/* Spacer to balance the logo/back button */}
           </div>
         </div>
       )}
@@ -238,7 +246,7 @@ const OnboardingLayout = ({
             </button>
           )}
           <div className="max-w-md mx-auto w-full">
-            <Logo className="mb-12 scale-75 origin-left" />
+            {currentStep === 'package-selection' && <Logo className="mb-12 scale-75 origin-left" />}
             {children}
           </div>
         </div>
@@ -1082,14 +1090,16 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
     newCustomers: '',
     brandColors: '',
     brandFonts: '',
+    styleGuide: null as string | null,
+    styleGuideName: '',
+    logoFiles: null as string | null,
+    logoFilesName: '',
     linkedinUrl: '',
     instagramUrl: '',
     facebookUrl: '',
     twitterUrl: '',
     tiktokUrl: '',
     toneGuidelines: '',
-    styleGuide: null as string | null,
-    logoFiles: null as string | null
   });
 
   // Load saved progress
@@ -1188,9 +1198,9 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       fields: [
         { id: 'marketingActivities', label: 'Current marketing activities', type: 'textarea', placeholder: 'e.g. "Posting 3x week on LinkedIn, running $500/mo Google Ads, monthly email newsletter to 1,000 subs."', required: true },
         { id: 'whatWorks', label: 'What works and what hasn\'t worked?', type: 'textarea', placeholder: 'e.g. "LinkedIn outreach works well, but Facebook Ads had a very high CPL and low quality."', required: true },
-        { id: 'websiteTraffic', label: 'Monthly website traffic', type: 'text', placeholder: 'e.g. 2,500 unique visitors per month (Check your Google Analytics)', required: true },
-        { id: 'monthlyLeads', label: 'Monthly leads', type: 'text', placeholder: 'e.g. 45 inbound inquiries per month', required: true },
-        { id: 'newCustomers', label: 'Monthly new customers', type: 'text', placeholder: 'e.g. 12 new signed contracts per month', required: true }
+        { id: 'websiteTraffic', label: 'Monthly website traffic', type: 'text', placeholder: 'e.g. 2,500 unique visitors per month (Check your Google Analytics)' },
+        { id: 'monthlyLeads', label: 'Monthly leads', type: 'text', placeholder: 'e.g. 45 inbound inquiries per month' },
+        { id: 'newCustomers', label: 'Monthly new customers', type: 'text', placeholder: 'e.g. 12 new signed contracts per month' }
       ]
     },
     { 
@@ -1198,10 +1208,10 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       title: 'Brand & Social',
       q: "Let's polish the look and feel.", 
       fields: [
-        { id: 'brandColors', label: 'Brand colors', type: 'textarea', placeholder: 'e.g. Primary: #006777 (Teal), Secondary: #FEDA5F (Yellow). Provide HEX codes if possible.', required: true },
-        { id: 'brandFonts', label: 'Brand fonts', type: 'text', placeholder: 'e.g. Montserrat for Headings, Open Sans for Body text.', required: true },
+        { id: 'brandColors', label: 'Brand colors', type: 'textarea', placeholder: 'e.g. Primary: #006777 (Teal), Secondary: #FEDA5F (Yellow). Provide HEX codes if possible.' },
+        { id: 'brandFonts', label: 'Brand fonts', type: 'text', placeholder: 'e.g. Montserrat for Headings, Open Sans for Body text.' },
         { id: 'toneGuidelines', label: 'Brand tone and voice guidelines', type: 'textarea', placeholder: 'e.g. "Professional yet approachable, witty but not sarcastic, authoritative but helpful." Use 3-5 adjectives.', required: true },
-        { id: 'styleGuide', label: 'Upload your brand style guide', type: 'file', placeholder: 'Choose File (PDF or Image)', required: true },
+        { id: 'styleGuide', label: 'Upload your brand style guide', type: 'file', placeholder: 'Choose File (PDF or Image)' },
         { id: 'logoFiles', label: 'Upload logo files', type: 'file', placeholder: 'Choose File (PNG, SVG, or JPG)', required: true }
       ]
     },
@@ -1210,11 +1220,11 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
       title: 'Social Channels',
       q: "Where do you hang out?", 
       fields: [
-        { id: 'linkedinUrl', label: 'LinkedIn (URL)', type: 'text', placeholder: 'https://linkedin.com/company/your-brand', required: true },
-        { id: 'instagramUrl', label: 'Instagram (URL)', type: 'text', placeholder: 'https://instagram.com/your-brand', required: true },
-        { id: 'facebookUrl', label: 'Facebook (URL)', type: 'text', placeholder: 'https://facebook.com/your-brand', required: true },
-        { id: 'twitterUrl', label: 'Twitter/X (URL)', type: 'text', placeholder: 'https://twitter.com/your-brand', required: true },
-        { id: 'tiktokUrl', label: 'TikTok (URL)', type: 'text', placeholder: 'https://tiktok.com/your-brand', required: true }
+        { id: 'linkedinUrl', label: 'LinkedIn (URL)', type: 'text', placeholder: 'https://linkedin.com/company/your-brand' },
+        { id: 'instagramUrl', label: 'Instagram (URL)', type: 'text', placeholder: 'https://instagram.com/your-brand' },
+        { id: 'facebookUrl', label: 'Facebook (URL)', type: 'text', placeholder: 'https://facebook.com/your-brand' },
+        { id: 'twitterUrl', label: 'Twitter/X (URL)', type: 'text', placeholder: 'https://twitter.com/your-brand' },
+        { id: 'tiktokUrl', label: 'TikTok (URL)', type: 'text', placeholder: 'https://tiktok.com/your-brand' }
       ]
     }
   ];
@@ -1283,8 +1293,12 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
           className="bg-white p-10 rounded-[3rem] border-4 border-hum-navy shadow-[12px_12px_0px_0px_rgba(22,55,71,1)]"
         >
           <div className="flex items-center gap-4 mb-8">
-            <div className="w-12 h-12 bg-hum-yellow rounded-xl flex items-center justify-center">
-              <BarChart3 className="text-hum-navy w-6 h-6" />
+            <div className="w-12 h-12 bg-hum-yellow rounded-xl flex items-center justify-center overflow-hidden border-2 border-hum-navy/10 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
+              {formData.logoFiles ? (
+                <img src={formData.logoFiles} className="w-full h-full object-contain" />
+              ) : (
+                <BarChart3 className="text-hum-navy w-6 h-6" />
+              )}
             </div>
             <div className="font-black uppercase tracking-tight text-hum-navy text-xl">Strategy Matrix</div>
           </div>
@@ -1360,7 +1374,11 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
                     if (file) {
                       const reader = new FileReader();
                       reader.onloadend = () => {
-                        setFormData({...formData, [field.id]: reader.result as string});
+                        setFormData({
+                          ...formData, 
+                          [field.id]: reader.result as string,
+                          [`${field.id}Name`]: file.name
+                        });
                       };
                       reader.readAsDataURL(file);
                     }
@@ -1372,13 +1390,12 @@ const Questionnaire = ({ onComplete, onBack, initialData }: { onComplete: (data:
                 >
                   <div className="text-center">
                     <Upload className="w-8 h-8 mx-auto mb-2 opacity-40" />
-                    <span>
-                      {(formData as any)[field.id] 
-                        ? (typeof (formData as any)[field.id] === 'string' && (formData as any)[field.id].startsWith('data:') 
-                            ? 'File selected' 
-                            : (formData as any)[field.id])
-                        : field.placeholder || 'Upload File'}
+                    <span className="block max-w-xs truncate">
+                      {(formData as any)[`${field.id}Name`] || field.placeholder || 'Upload File'}
                     </span>
+                    {(formData as any)[`${field.id}Name`] && (
+                      <span className="text-[10px] text-hum-teal mt-1 block">File selected</span>
+                    )}
                   </div>
                 </label>
               </div>

@@ -648,9 +648,9 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
             For Expertise-Led Businesses
           </div>
           <h1 className="text-6xl md:text-8xl font-black leading-[0.85] mb-10 tracking-tighter uppercase text-hum-navy">
-            Keep Your <br />
-            Business <span className="text-hum-coral">Humming</span> <br />
-            <span className="text-hum-teal italic lowercase font-medium tracking-normal">Along.</span>
+            Social Media <br />
+            Strategy. <br />
+            <span className="text-hum-teal italic lowercase font-medium tracking-normal">Automated.</span>
           </h1>
           <div className="flex gap-4 mb-10">
             {['Strategy', 'Production', 'Publishing'].map((stage, i) => (
@@ -661,7 +661,7 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
             ))}
           </div>
           <p className="text-xl text-hum-navy/80 mb-12 max-w-lg leading-relaxed font-medium">
-            Turn unclear marketing thinking into consistent, authority-building social content. SocialHum automates the agency workflow — so your business shows up strategically, consistently, and on-brand every month.
+            High-authority content for expertise-led businesses. No retainers, no meetings, just consistent growth.
           </p>
           <div className="flex flex-col sm:flex-row gap-6 items-center">
             <Button onClick={onStart} variant="primary" className="text-xl px-10 py-5 bg-hum-teal text-white hover:bg-hum-navy border-2 border-hum-navy shadow-[6px_6px_0px_0px_rgba(22,55,71,1)]">
@@ -725,17 +725,17 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
             {[
               { 
                 title: "Strategy", 
-                desc: "We don't just post. We build a Customer Journey Map and Content Matrix based on your business's specific expertise and target audience.",
+                desc: "We build your Customer Journey Map and Content Matrix based on your specific expertise.",
                 icon: <Zap className="w-12 h-12 text-hum-yellow" />
               },
               { 
                 title: "Production", 
-                desc: "Our AI engine generates high-authority social posts that sound like you, not a robot. On-brand, every time.",
+                desc: "High-authority social posts that sound like you. On-brand, every time.",
                 icon: <Sparkles className="w-12 h-12 text-hum-coral" />
               },
               { 
                 title: "Publishing", 
-                desc: "Review, approve, and publish. We handle the structured delivery so your business stays visible without the internal bottleneck.",
+                desc: "Review, approve, and publish. We handle the delivery so you stay visible without the bottleneck.",
                 icon: <Calendar className="w-12 h-12 text-hum-teal" />
               }
             ].map((pillar, i) => (
@@ -759,10 +759,9 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
             to <span className="text-hum-teal">Influential</span>
           </h2>
           <div className="space-y-8 text-xl text-hum-navy/80 leading-relaxed font-medium">
-            <p>Most expertise-led businesses don’t struggle with expertise. They struggle with consistency.</p>
-            <p>Marketing thinking lives in partner meetings. Content gets delegated. Posting becomes reactive. Momentum disappears.</p>
+            <p>Expertise-led businesses don't struggle with knowledge—they struggle with consistency.</p>
+            <p>We've productised the agency strategy process to turn your positioning into ready-to-publish content.</p>
             <p className="font-black text-hum-navy uppercase tracking-tight bg-hum-yellow inline-block px-2 border-2 border-hum-navy">SocialHum changes that.</p>
-            <p>We productised the agency strategy process — and built it into a system that turns your positioning into ready-to-publish content.</p>
           </div>
           <div className="mt-12">
             <button onClick={onHowItWorks} className="text-hum-teal font-black uppercase tracking-widest text-sm flex items-center gap-2 group">

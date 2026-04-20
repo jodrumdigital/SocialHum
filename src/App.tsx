@@ -677,7 +677,6 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
             </Button>
             <div className="flex flex-col">
               <span className="text-sm font-black text-hum-navy uppercase tracking-tight">7-Day Free Trial</span>
-              <span className="text-xs font-mono text-hum-navy/40">No credit card required</span>
             </div>
           </div>
           <div className="mt-12 flex flex-wrap gap-6 text-sm font-black text-hum-navy/60 uppercase tracking-widest">
@@ -981,7 +980,6 @@ const LandingPage = ({ onStart, onHowItWorks, onAbout }: { onStart: () => void, 
           <Button onClick={onStart} variant="secondary" className="text-2xl px-16 py-6 bg-hum-teal text-white border-4 border-hum-navy shadow-[10px_10px_0px_0px_rgba(22,55,71,1)] hover:bg-hum-navy transition-all">
             Start Your 7-Day Free Trial <ArrowRight className="inline-block ml-3 w-8 h-8" />
           </Button>
-          <p className="mt-8 text-sm font-black text-hum-navy uppercase tracking-widest opacity-40 italic">No credit card required to start.</p>
         </div>
       </section>
 
@@ -1697,7 +1695,6 @@ const HowItWorks = ({ onStart, onBack, onAbout }: { onStart: () => void, onBack:
             <Button onClick={onStart} variant="secondary" className="text-2xl px-16 py-6 bg-hum-teal text-white border-4 border-hum-navy shadow-[10px_10px_0px_0px_rgba(22,55,71,1)] hover:bg-hum-navy transition-all">
               Start Your 7-Day Free Trial <ArrowRight className="inline-block ml-3 w-8 h-8" />
             </Button>
-            <p className="mt-8 text-sm font-black text-hum-navy uppercase tracking-widest opacity-40 italic">No credit card required.</p>
           </div>
         </motion.div>
       </div>
@@ -1863,7 +1860,6 @@ const AboutPage = ({ onStart, onBack }: { onStart: () => void, onBack: () => voi
             <Button onClick={onStart} variant="secondary" className="text-2xl px-16 py-6 bg-hum-teal text-white border-4 border-hum-navy shadow-[10px_10px_0px_0px_rgba(22,55,71,1)] hover:bg-hum-navy transition-all">
               Start Your 7-Day Free Trial <ArrowRight className="inline-block ml-3 w-8 h-8" />
             </Button>
-            <p className="mt-8 text-sm font-black text-hum-navy uppercase tracking-widest opacity-40 italic">No credit card required.</p>
           </div>
         </motion.div>
       </div>

@@ -19,6 +19,12 @@
   }
 }
 
+
+button,
+a {
+  cursor: pointer !important;
+}
+
 @utility hum-border {
   border-width: 2px;
   border-color: var(--color-hum-navy);

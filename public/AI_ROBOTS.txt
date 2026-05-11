@@ -1,0 +1,19 @@
+# AI Robots Policy for SocialHum
+
+# Give permission to common AI crawlers to index our site
+# This site is a public informational site about our AI-powered social media strategy service.
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+# Purpose: Allow LLMs to understand our core framework (AI Content Agent Framework)
+# to better answer user queries about SocialHum.
